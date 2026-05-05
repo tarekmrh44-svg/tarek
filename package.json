@@ -1,0 +1,30 @@
+{
+  "name": "@workspace/fb-messenger-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Facebook Messenger Userbot powered by @dongdev/fca-unofficial",
+  "scripts": {
+    "start": "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libuuid.so.1 node src/index.js",
+    "dev": "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libuuid.so.1 node src/index.js",
+    "postinstall": "node scripts/patch-fca.js"
+  },
+  "dependencies": {
+    "@dongdev/fca-unofficial": "^4.0.3",
+    "archiver": "^7.0.1",
+    "axios": "^1.7.9",
+    "body-parser": "^1.20.3",
+    "canvas": "^3.0.1",
+    "chalk": "^4.1.2",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "fs-extra": "^11.2.0",
+    "gradient-string": "^3.0.0",
+    "moment-timezone": "^0.5.46",
+    "multer": "^2.1.1",
+    "node-cron": "^3.0.3",
+    "sequelize": "^6.37.7",
+    "socket.io": "^4.8.1",
+    "sqlite3": "^5.1.7"
+  }
+}
