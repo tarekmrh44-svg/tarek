@@ -18,6 +18,18 @@ fs.ensureDirSync(UPLOADS_DIR);
 let io;
 const sessions  = new Map();
 const _logBuf   = [];
+
+// ─── Message Buffer (live dashboard page) ─────────────────────────────────────
+const _msgBuf = new Map(); // threadID → [{...}]
+const MSG_BUF_MAX = 60;
+function _bufferMsg(msg) {
+  const tid = String(msg.threadID);
+  if (!_msgBuf.has(tid)) _msgBuf.set(tid, []);
+  const buf = _msgBuf.get(tid);
+  buf.push(msg);
+  if (buf.length > MSG_BUF_MAX) buf.shift();
+}
+global._bufferMsg = _bufferMsg;
 const _stripANSI = s => String(s)
   .replace(/\x1b\[[0-9;]*m/g, '')
   .replace(/\x1b\][^\x07]*\x07/g, '')
@@ -557,6 +569,32 @@ async function startDashboard(port) {
     archive.pipe(res);
     archive.directory(dir, false);
     archive.finalize();
+  });
+
+  // ── Command Roles ──────────────────────────────────────────────────────────
+  app.get("/api/command-roles", (_req, res) => {
+    res.json(global.config?.commandRoles || {});
+  });
+
+  app.post("/api/command-roles", (req, res) => {
+    try {
+      const { cmd, role } = req.body || {};
+      if (!cmd) return res.status(400).json({ error: "cmd مطلوب" });
+      if (!["admin", "member"].includes(role)) return res.status(400).json({ error: "role يجب أن يكون admin أو member" });
+      const cfg = fs.existsSync(CONFIG_PATH) ? fs.readJsonSync(CONFIG_PATH) : {};
+      if (!cfg.commandRoles) cfg.commandRoles = {};
+      cfg.commandRoles[cmd] = role;
+      fs.writeJsonSync(CONFIG_PATH, cfg, { spaces: 2 });
+      if (global.config) global.config.commandRoles = cfg.commandRoles;
+      res.json({ success: true, cmd, role });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  // ── Thread Messages Buffer (live page) ────────────────────────────────────
+  app.get("/api/threads/:id/messages", (req, res) => {
+    const tid = req.params.id;
+    const msgs = _msgBuf.get(tid) || [];
+    res.json(msgs);
   });
 
   // ── Threads list (from DB) ─────────────────────────────────────────────────
