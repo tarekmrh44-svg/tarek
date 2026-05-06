@@ -444,20 +444,42 @@ input.ck-input:focus{border-color:var(--accent)}
 <!-- ══ PROTECTION ══ -->
 <div id="page-protection" class="page hidden">
   <div class="page-header">
-    <div><div class="page-title"><span>🛡️</span> الحماية</div><div class="page-desc">WHITE Engine — حماية الحساب</div></div>
-    <button class="btn btn-outline btn-sm" onclick="loadProtection()">🔄 تحديث</button>
+    <div><div class="page-title"><span>🛡️</span> الحماية</div><div class="page-desc">WHITE Engine v2 — 16 نظام حماية لمحاكاة الإنسان</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="enableAllProt()">✅ تفعيل الكل</button>
+      <button class="btn btn-outline btn-sm" onclick="loadProtection()">🔄 تحديث</button>
+    </div>
   </div>
   <div class="page-content">
-    <div class="prot-grid">
+
+    <!-- قسم الأنظمة الأصلية -->
+    <div class="panel-title" style="margin-bottom:8px;font-size:.75rem;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase">⚙️ أنظمة الاتصال والشبكة</div>
+    <div class="prot-grid" style="margin-bottom:14px">
       <div class="prot-card"><span class="pc-ico">⌨️</span><div class="pc-info"><div class="pc-name">محاكاة الكتابة البشرية</div><div class="pc-desc">تأخير واقعي قبل كل رد — يمنع الكشف كبوت</div></div><label class="toggle-sw"><input type="checkbox" id="p-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
       <div class="prot-card"><span class="pc-ico">🕵️</span><div class="pc-info"><div class="pc-name">محرك التخفي</div><div class="pc-desc">تصفح صفحات وتدوير User-Agent ونوم ليلي</div></div><label class="toggle-sw"><input type="checkbox" id="p-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
       <div class="prot-card"><span class="pc-ico">📡</span><div class="pc-info"><div class="pc-name">MQTT Health Check</div><div class="pc-desc">إعادة اتصال تلقائي عند الانقطاع</div></div><label class="toggle-sw"><input type="checkbox" id="p-mqtt" onchange="toggleProt('mqttHealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
       <div class="prot-card"><span class="pc-ico">💓</span><div class="pc-info"><div class="pc-name">Keep-Alive</div><div class="pc-desc">نبضة كل 8-18 دقيقة</div></div><label class="toggle-sw"><input type="checkbox" id="p-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
       <div class="prot-card"><span class="pc-ico">🐢</span><div class="pc-info"><div class="pc-name">تقليل سرعة الإرسال</div><div class="pc-desc">Outgoing Throttle — يحمي من الحظر</div></div><label class="toggle-sw"><input type="checkbox" id="p-throttle" onchange="toggleProt('throttle',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
     </div>
-    <div class="panel" style="margin-top:14px">
-      <div class="panel-title"><span class="pt-icon">📊</span> إحصاء الحماية</div>
-      <div class="cards-grid" id="prot-stats" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))"></div>
+
+    <!-- قسم أنظمة المحاكاة الجديدة -->
+    <div class="panel-title" style="margin-bottom:8px;font-size:.75rem;color:var(--accent2);letter-spacing:.08em;text-transform:uppercase">🧠 أنظمة محاكاة السلوك البشري — جديد</div>
+    <div class="prot-grid" style="margin-bottom:14px">
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">👁️</span><div class="pc-info"><div class="pc-name">تأخير القراءة البشري</div><div class="pc-desc">يحسب وقت قراءة الرسالة حسب طولها قبل الرد</div></div><label class="toggle-sw"><input type="checkbox" id="p-readrcpt" onchange="toggleProt('humanReadReceipt',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🌅</span><div class="pc-info"><div class="pc-name">نمط الحضور الطبيعي</div><div class="pc-desc">أوقات ذروة صباح/مساء — نوم ليلي تلقائي</div></div><label class="toggle-sw"><input type="checkbox" id="p-natpres" onchange="toggleProt('naturalPresence',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">📱</span><div class="pc-info"><div class="pc-name">محاكي التمرير</div><div class="pc-desc">يتصفح ماسنجر وصفحات FB بشكل طبيعي</div></div><label class="toggle-sw"><input type="checkbox" id="p-scroll" onchange="toggleProt('scrollSimulator',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🕶️</span><div class="pc-info"><div class="pc-name">مكافحة الكشف</div><div class="pc-desc">تدوير بصمة الجهاز والـ headers تلقائياً</div></div><label class="toggle-sw"><input type="checkbox" id="p-antidet" onchange="toggleProt('antiDetection',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🔄</span><div class="pc-info"><div class="pc-name">تجديد الجلسة</div><div class="pc-desc">يلمس نقاط FB Auth دورياً لإبقاء الكوكيز حيّة</div></div><label class="toggle-sw"><input type="checkbox" id="p-sessref" onchange="toggleProt('sessionRefresher',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">😊</span><div class="pc-info"><div class="pc-name">تأخير الردود الانفعالية</div><div class="pc-desc">تأخير بشري قبل أي Reaction حسب نوعه</div></div><label class="toggle-sw"><input type="checkbox" id="p-reactdly" onchange="toggleProt('reactionDelay',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">📶</span><div class="pc-info"><div class="pc-name">تذبذب الاتصال</div><div class="pc-desc">يُحاكي تفاوت الشبكة الخلوية (3G/4G/5G)</div></div><label class="toggle-sw"><input type="checkbox" id="p-jitter" onchange="toggleProt('connectionJitter',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🛑</span><div class="pc-info"><div class="pc-name">منع الرسائل المكررة</div><div class="pc-desc">يرصد التكرار ويحجبه في نافذة 8 ثوانٍ</div></div><label class="toggle-sw"><input type="checkbox" id="p-dedup" onchange="toggleProt('duplicateGuard',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🎭</span><div class="pc-info"><div class="pc-name">تنويع نمط الكتابة</div><div class="pc-desc">أنماط مزاج مختلفة — توقفات تفكير عشوائية</div></div><label class="toggle-sw"><input type="checkbox" id="p-typvar" onchange="toggleProt('typingVariator',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🗓️</span><div class="pc-info"><div class="pc-name">جدولة السلوك</div><div class="pc-desc">تأخير ذكي للردود + حالة "مشغول" عشوائية</div></div><label class="toggle-sw"><input type="checkbox" id="p-behsched" onchange="toggleProt('behaviorScheduler',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
+    </div>
+
+    <div class="panel" style="margin-top:4px">
+      <div class="panel-title"><span class="pt-icon">📊</span> إحصاء الحماية الفورية</div>
+      <div id="prot-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px"></div>
     </div>
   </div>
 </div>
@@ -1008,18 +1030,52 @@ async function triggerRelogin(){
 /* ══ PROTECTION ══ */
 async function loadProtection(){
   const r=await apiFetch('/api/protection');if(!r.ok)return;const d=r.data;
-  const map={'p-typing':d.humanTyping?.enabled,'p-stealth':d.stealth?.enabled,'p-throttle':d.throttle?.enabled,'p-mqtt':d.mqttHealth?.enabled,'p-keepalive':d.keepAlive?.enabled,'qt-typing':d.humanTyping?.enabled,'qt-stealth':d.stealth?.enabled,'qt-keepalive':d.keepAlive?.enabled};
+  const map={
+    'p-typing':d.humanTyping?.enabled,'p-stealth':d.stealth?.enabled,'p-throttle':d.throttle?.enabled,
+    'p-mqtt':d.mqttHealth?.enabled,'p-keepalive':d.keepAlive?.enabled,
+    'qt-typing':d.humanTyping?.enabled,'qt-stealth':d.stealth?.enabled,'qt-keepalive':d.keepAlive?.enabled,
+    // الجديدة
+    'p-readrcpt':d.humanReadReceipt?.enabled,'p-natpres':d.naturalPresence?.enabled,
+    'p-scroll':d.scrollSimulator?.enabled,'p-antidet':d.antiDetection?.enabled,
+    'p-sessref':d.sessionRefresher?.enabled,'p-reactdly':d.reactionDelay?.enabled,
+    'p-jitter':d.connectionJitter?.enabled,'p-dedup':d.duplicateGuard?.enabled,
+    'p-typvar':d.typingVariator?.enabled,'p-behsched':d.behaviorScheduler?.enabled,
+  };
   for(const[id,val]of Object.entries(map)){const el=$(id);if(el)el.checked=!!val;}
-  const ps=$('prot-stats');
-  if(ps&&d.throttle){ps.innerHTML=`
-    <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem">${d.throttle.trackedThreads??0}</div><div class="lbl">محادثة مُراقبة</div></div></div>
-    <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem">${d.throttle.globalQueueSize??0}</div><div class="lbl">رسائل في الصف</div></div></div>
-    <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem;color:${d.throttle.burstCoolingActive?'var(--red)':'var(--green)'}">${d.throttle.burstCoolingActive?'نشط':'هادئ'}</div><div class="lbl">Burst Cooling</div></div></div>
-    <div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:1rem;color:${d.stealth?.isSleepHour?'var(--blue)':'var(--green)'}">${d.stealth?.isSleepHour?'نوم 🌙':'نشط 🟢'}</div><div class="lbl">الوضع</div></div></div>`;}
+  // إحصاء الحماية
+  const ps=$('prot-stats');if(!ps)return;
+  const stat=(val,lbl,color)=>`<div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:.9rem;${color?'color:'+color:''}">${val}</div><div class="lbl" style="font-size:.6rem">${lbl}</div></div></div>`;
+  let html='';
+  if(d.throttle){
+    html+=stat(d.throttle.trackedThreads??0,'محادثة مُراقبة');
+    html+=stat(d.throttle.burstCoolingActive?'⛔ بارد':'✅ هادئ','Burst',d.throttle.burstCoolingActive?'var(--red)':'var(--green)');
+  }
+  if(d.stealth) html+=stat(d.stealth.isSleepHour?'🌙 نوم':'🟢 نشط','وضع Stealth',d.stealth.isSleepHour?'var(--blue)':'var(--green)');
+  if(d.naturalPresence?.running!==undefined) html+=stat(d.naturalPresence.currentState||'—','Natural Presence');
+  if(d.scrollSimulator?.scrollCount!==undefined) html+=stat(d.scrollSimulator.scrollCount,'تمرير مُنفَّذ');
+  if(d.antiDetection?.currentProfile) html+=stat(d.antiDetection.currentProfile.split(' ').slice(0,2).join(' '),'ملف الجهاز');
+  if(d.sessionRefresher?.refreshCount!==undefined) html+=stat(d.sessionRefresher.refreshCount,'تجديد جلسة');
+  if(d.connectionJitter?.networkProfile) html+=stat(d.connectionJitter.networkProfile,'شبكة');
+  if(d.duplicateGuard?.blockedCount!==undefined) html+=stat(d.duplicateGuard.blockedCount,'رسالة محجوبة','var(--orange)');
+  if(d.typingVariator?.currentMood) html+=stat(d.typingVariator.currentMood,'مزاج الكتابة');
+  if(d.behaviorScheduler?.skippedCount!==undefined) html+=stat(d.behaviorScheduler.skippedCount,'رد مؤجل');
+  ps.innerHTML=html||'<div style="color:var(--muted);font-size:.78rem">لا توجد إحصاءات بعد</div>';
 }
 async function toggleProt(system,enable){
   const r=await apiFetch('/api/protection/toggle',{method:'POST',body:JSON.stringify({system,enable})});
-  if(r.ok)toast(`${enable?'✅ تفعيل':'⛔ إيقاف'} ${system}`,'ok');else toast(r.data.error||'خطأ','err');
+  if(r.ok){
+    const names={'humanTyping':'محاكاة الكتابة','stealth':'التخفي','mqttHealth':'MQTT','keepAlive':'Keep-Alive','throttle':'التقليل',
+      'humanReadReceipt':'تأخير القراءة','naturalPresence':'الحضور الطبيعي','scrollSimulator':'التمرير','antiDetection':'مكافحة الكشف',
+      'sessionRefresher':'تجديد الجلسة','reactionDelay':'تأخير الردود','connectionJitter':'تذبذب الاتصال',
+      'duplicateGuard':'منع التكرار','typingVariator':'تنويع الكتابة','behaviorScheduler':'جدولة السلوك'};
+    toast(`${enable?'✅':'⛔'} ${names[system]||system}`,'ok');
+  }else toast(r.data.error||'خطأ','err');
+}
+async function enableAllProt(){
+  const systems=['humanTyping','stealth','keepAlive','humanReadReceipt','naturalPresence','scrollSimulator',
+    'antiDetection','sessionRefresher','reactionDelay','connectionJitter','duplicateGuard','typingVariator','behaviorScheduler'];
+  for(const s of systems)await apiFetch('/api/protection/toggle',{method:'POST',body:JSON.stringify({system:s,enable:true})});
+  toast('✅ تم تفعيل جميع أنظمة الحماية','ok');loadProtection();
 }
 
 /* ══ CMD SUB-TABS ══ */
