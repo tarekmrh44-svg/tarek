@@ -1,81 +1,135 @@
 "use strict";
 
 /**
- * Human Typing Simulation
- * Sends realistic typing indicators before bot replies
- * based on message length — like a real human would.
+ * Human Typing Simulation — WHITE Engine
+ * ==========================================
+ * يعمل على مستوى api.sendMessage مباشرةً.
+ * أي أمر (حالي أو مستقبلي) يستدعي api.sendMessage
+ * سيحصل تلقائياً على مؤشر الكتابة + تأخير واقعي
+ * بدون أي تعديل في كود الأمر.
  */
 
-function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-/**
- * Calculate realistic typing delay based on message length
- * Average human types ~40 WPM = ~200 chars/min = ~3.3 chars/sec
- * We use a faster rate (bot "thinks" faster) with jitter
- */
-function calcTypingMs(text) {
-  if (!text || typeof text !== "string") return randInt(800, 2000);
-  const len = text.length;
-  // Base: 40ms per char, with floor at 800ms and cap at 8000ms
-  const base = Math.min(Math.max(len * 40, 800), 8000);
-  // Add ±20% jitter
-  return Math.round(base * (0.80 + Math.random() * 0.40));
+// ─── حساب مدة الكتابة بناءً على طول النص ──────────────────────────────────
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 /**
- * Send typing indicator and wait realistic time before sending
- * @param {object} api - fca-unofficial api object
- * @param {string} threadID - thread to type in
- * @param {string|object} replyMessage - the message about to be sent (for length calc)
- * @param {boolean} force - skip config check
+ * يستخرج النص من أي صيغة رسالة
+ * @param {string|object} msg
+ * @returns {string}
  */
-async function simulateTyping(api, threadID, replyMessage, force = false) {
+function extractText(msg) {
+  if (!msg) return "";
+  if (typeof msg === "string") return msg;
+  if (typeof msg === "object") {
+    return msg.body || msg.message || msg.text || "";
+  }
+  return "";
+}
+
+/**
+ * يحسب مدة الكتابة الواقعية بناءً على طول النص
+ * متوسط إنسان: ~40 كلمة/دقيقة = ~200 حرف/دقيقة
+ * البوت "يفكر" أسرع — نستخدم 25-50ms لكل حرف مع تشويش
+ * @param {string} text
+ * @returns {number} milliseconds
+ */
+function calcTypingDelay(text) {
+  const len = (text || "").length;
+  if (len === 0) return randInt(600, 1200);
+
+  // 35ms لكل حرف، حد أدنى 700ms، حد أقصى 7000ms
+  const base = Math.min(Math.max(len * 35, 700), 7000);
+
+  // تشويش ±25% لمحاكاة الطباعة غير المنتظمة
+  const jitter = base * (0.75 + Math.random() * 0.50);
+
+  return Math.round(jitter);
+}
+
+// ─── إرسال مؤشر الكتابة ─────────────────────────────────────────────────────
+async function sendTypingIndicator(api, threadID) {
   try {
-    const cfg = global.config?.humanTyping || {};
-    if (cfg.enable === false && !force) return;
-
-    // Extract text length from message
-    let text = "";
-    if (typeof replyMessage === "string") text = replyMessage;
-    else if (replyMessage?.body) text = replyMessage.body;
-    else if (replyMessage?.message) text = replyMessage.message;
-
-    const typingMs = calcTypingMs(text);
-
-    // Send typing indicator
-    try { await api.sendTypingIndicator(threadID); } catch (_) {}
-
-    // Wait realistic time
-    await sleep(typingMs);
-
-    // Add small "finishing up" pause (human pauses before hitting send)
-    await sleep(randInt(200, 600));
-
+    await new Promise((resolve) => {
+      // بعض إصدارات fca ترجع promise وبعضها callback
+      const result = api.sendTypingIndicator(threadID, () => resolve());
+      if (result && typeof result.then === "function") {
+        result.then(resolve).catch(resolve);
+      }
+      // ضمان الحل في كل الأحوال
+      setTimeout(resolve, 500);
+    });
   } catch (_) {}
 }
 
+// ─── المحاكاة الكاملة: مؤشر + انتظار ─────────────────────────────────────
 /**
- * Wrap api.sendMessage to auto-simulate typing before every send
- * Call once after login: wrapWithTyping(api)
+ * @param {object} api
+ * @param {string} threadID
+ * @param {string|object} msg  - الرسالة التي ستُرسل (لحساب الطول)
  */
-function wrapWithTyping(api) {
-  if (api.__typingWrapped) return;
-  api.__typingWrapped = true;
+async function simulateTyping(api, threadID, msg) {
+  const cfg = global.config?.humanTyping || {};
+  if (cfg.enable === false) return;
 
-  const _orig = api.sendMessage.bind(api);
+  const text = extractText(msg);
+  const delay = calcTypingDelay(text);
 
-  api.sendMessage = async function(msg, threadID, callback, messageID) {
-    try {
-      const cfg = global.config?.humanTyping || {};
-      if (cfg.enable !== false) {
-        await simulateTyping(api, threadID, msg, true);
-      }
-    } catch (_) {}
-    return _orig(msg, threadID, callback, messageID);
-  };
+  // أرسل مؤشر الكتابة
+  await sendTypingIndicator(api, threadID);
 
-  console.log("[HUMAN_TYPING] ✅ Typing simulation active");
+  // انتظر المدة الواقعية
+  await sleep(delay);
+
+  // وقفة صغيرة قبل الإرسال (كأن الإنسان يراجع الرسالة)
+  await sleep(randInt(150, 450));
 }
 
-module.exports = { simulateTyping, wrapWithTyping, calcTypingMs };
+// ─── تغليف api.sendMessage ─────────────────────────────────────────────────
+/**
+ * يُغلّف api.sendMessage بحيث يُظهر الكتابة تلقائياً قبل كل رسالة.
+ * يُستدعى مرة واحدة بعد تسجيل الدخول (وبعد كل hot-swap).
+ * @param {object} api
+ */
+function wrapWithTyping(api) {
+  // منع التغليف المزدوج
+  if (api.__typingWrapped) {
+    console.log("[HUMAN_TYPING] ⚡ Already wrapped — skipping");
+    return;
+  }
+  api.__typingWrapped = true;
+
+  // احتفظ بالدالة الأصلية
+  const _originalSend = api.sendMessage.bind(api);
+
+  /**
+   * النسخة المُغلَّفة من sendMessage
+   * تدعم جميع أشكال الاستدعاء:
+   *   sendMessage(msg, threadID)
+   *   sendMessage(msg, threadID, callback)
+   *   sendMessage(msg, threadID, callback, messageID)   ← reply
+   */
+  api.sendMessage = async function wrappedSendMessage(msg, threadID, callback, messageID) {
+    // محاكاة الكتابة (ستُتخطى إذا كانت معطّلة في الإعدادات)
+    try {
+      await simulateTyping(api, threadID, msg);
+    } catch (_) {}
+
+    // أرسل الرسالة الفعلية
+    return _originalSend(msg, threadID, callback, messageID);
+  };
+
+  console.log("[HUMAN_TYPING] ✅ api.sendMessage wrapped — typing simulation active for ALL commands");
+}
+
+// ─── إلغاء التغليف (للاستخدام الداخلي عند hot-swap) ───────────────────────
+function unwrapTyping(api) {
+  if (!api.__typingWrapped) return;
+  // ليس ضرورياً إلغاء التغليف — hot-swap يُنشئ api جديد دائماً
+  delete api.__typingWrapped;
+}
+
+module.exports = { wrapWithTyping, unwrapTyping, simulateTyping, calcTypingDelay };
