@@ -480,25 +480,50 @@ async function startDashboard(port) {
 
   // ── Protection ─────────────────────────────────────────────────────────────
   app.get("/api/protection", (_req, res) => {
-    const throttle = (() => { try { return require("../protection/outgoingThrottle").getStatus(); } catch { return null; } })();
-    const stealth  = (() => { try { return require("../protection/stealth").getStatus(); } catch { return null; } })();
-    const cfg      = fs.existsSync(CONFIG_PATH) ? fs.readJsonSync(CONFIG_PATH) : {};
+    const safe = (fn) => { try { return fn(); } catch { return null; } };
+    const cfg  = fs.existsSync(CONFIG_PATH) ? fs.readJsonSync(CONFIG_PATH) : {};
     res.json({
-      stealth:     { enabled: cfg.stealth?.enable !== false, ...stealth },
-      throttle:    { enabled: cfg.stealth?.outgoingThrottle?.enable !== false, ...throttle },
-      humanTyping: { enabled: cfg.humanTyping?.enable !== false },
-      mqttHealth:  { enabled: cfg.mqttHealthCheck?.enable !== false },
-      keepAlive:   { enabled: cfg.keepAlive?.enable !== false },
+      // الأنظمة الأصلية
+      stealth:          { enabled: cfg.stealth?.enable !== false,                    ...safe(() => require("../protection/stealth").getStatus()) },
+      throttle:         { enabled: cfg.stealth?.outgoingThrottle?.enable !== false,  ...safe(() => require("../protection/outgoingThrottle").getStatus()) },
+      humanTyping:      { enabled: cfg.humanTyping?.enable !== false },
+      mqttHealth:       { enabled: cfg.mqttHealthCheck?.enable !== false },
+      keepAlive:        { enabled: cfg.keepAlive?.enable !== false },
+      // الأنظمة الجديدة — 10 أنظمة محاكاة الإنسان
+      humanReadReceipt: { enabled: cfg.humanReadReceipt?.enable !== false,           ...safe(() => require("../protection/humanReadReceipt").getStatus?.()) },
+      naturalPresence:  { enabled: cfg.naturalPresence?.enable !== false,            ...safe(() => require("../protection/naturalPresence").getStatus()) },
+      scrollSimulator:  { enabled: cfg.scrollSimulator?.enable !== false,            ...safe(() => require("../protection/scrollSimulator").getStatus()) },
+      antiDetection:    { enabled: cfg.antiDetection?.enable !== false,              ...safe(() => require("../protection/antiDetection").getStatus()) },
+      sessionRefresher: { enabled: cfg.sessionRefresher?.enable !== false,           ...safe(() => require("../protection/sessionRefresher").getStatus()) },
+      reactionDelay:    { enabled: cfg.reactionDelay?.enable !== false,              ...safe(() => require("../protection/reactionDelay").getStatus()) },
+      connectionJitter: { enabled: cfg.connectionJitter?.enable !== false,           ...safe(() => require("../protection/connectionJitter").getStatus()) },
+      duplicateGuard:   { enabled: cfg.duplicateGuard?.enable !== false,             ...safe(() => require("../protection/duplicateGuard").getStatus()) },
+      typingVariator:   { enabled: cfg.typingVariator?.enable !== false,             ...safe(() => require("../protection/typingVariator").getStatus()) },
+      behaviorScheduler:{ enabled: cfg.behaviorScheduler?.enable !== false,          ...safe(() => require("../protection/behaviorScheduler").getStatus()) },
     });
   });
+
   app.post("/api/protection/toggle", (req, res) => {
     const { system, enable } = req.body || {};
     try {
       const cfg = fs.existsSync(CONFIG_PATH) ? fs.readJsonSync(CONFIG_PATH) : {};
-      if (system === "stealth")     { if (!cfg.stealth) cfg.stealth = {};          cfg.stealth.enable = !!enable; }
-      if (system === "humanTyping") { if (!cfg.humanTyping) cfg.humanTyping = {};  cfg.humanTyping.enable = !!enable; }
-      if (system === "mqttHealth")  { if (!cfg.mqttHealthCheck) cfg.mqttHealthCheck = {}; cfg.mqttHealthCheck.enable = !!enable; }
-      if (system === "keepAlive")   { if (!cfg.keepAlive) cfg.keepAlive = {};      cfg.keepAlive.enable = !!enable; }
+      const systems = [
+        "stealth", "humanTyping", "mqttHealth", "keepAlive",
+        "humanReadReceipt", "naturalPresence", "scrollSimulator", "antiDetection",
+        "sessionRefresher", "reactionDelay", "connectionJitter", "duplicateGuard",
+        "typingVariator", "behaviorScheduler",
+      ];
+      if (systems.includes(system)) {
+        const key = system === "mqttHealth" ? "mqttHealthCheck" : system;
+        if (!cfg[key]) cfg[key] = {};
+        cfg[key].enable = !!enable;
+      }
+      // throttle خاص
+      if (system === "throttle") {
+        if (!cfg.stealth) cfg.stealth = {};
+        if (!cfg.stealth.outgoingThrottle) cfg.stealth.outgoingThrottle = {};
+        cfg.stealth.outgoingThrottle.enable = !!enable;
+      }
       fs.writeJsonSync(CONFIG_PATH, cfg, { spaces: 2 });
       if (global.config) global.config = cfg;
       res.json({ success: true });
