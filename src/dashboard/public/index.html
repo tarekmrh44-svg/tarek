@@ -246,6 +246,49 @@ input.ck-input:focus{border-color:var(--accent)}
 .tag-green{background:#22c55e20;color:var(--green)}
 .tag-red{background:#ef444420;color:var(--red)}
 .tag-blue{background:#3b82f620;color:var(--blue)}
+
+/* ═══════ LIVE CONTROL PAGE ═══════ */
+.live-layout{display:grid;grid-template-columns:250px 1fr 230px;gap:10px;height:calc(100vh - 148px);padding:8px 20px 16px}
+.live-panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.live-panel-hdr{padding:9px 12px;font-size:.72rem;font-weight:800;color:var(--accent2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:6px;letter-spacing:.04em}
+.live-search{width:100%;background:#060614;border:none;border-bottom:1px solid var(--border);color:var(--text);padding:8px 12px;font-size:.77rem;outline:none;flex-shrink:0}
+.live-search:focus{border-bottom-color:var(--accent)}
+.live-grp-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid #ffffff05;font-size:.75rem;transition:background .12s;display:flex;flex-direction:column;gap:2px;border-right:3px solid transparent}
+.live-grp-item:hover{background:#ffffff07}
+.live-grp-item.sel{background:#00d4ff08;border-right-color:var(--accent2)}
+.live-grp-name{color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live-grp-id{color:var(--muted);font-size:.59rem;font-family:monospace}
+.live-grp-last{color:var(--muted2);font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live-msg-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:.73rem;flex-shrink:0}
+.live-msg-item.self{border-color:var(--accent);background:#7c6cfc10}
+.live-msg-name{font-weight:700;font-size:.66rem;margin-bottom:2px}
+.live-msg-body{color:var(--text);word-break:break-word;line-height:1.45}
+.live-msg-time{color:var(--muted);font-size:.58rem;margin-top:3px}
+.live-send-bar{display:flex;gap:6px;padding:8px;border-top:1px solid var(--border);flex-shrink:0}
+.live-send-ipt{flex:1;background:#080816;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 10px;font-size:.77rem;outline:none}
+.live-send-ipt:focus{border-color:var(--accent)}
+.live-cmd-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 5px;font-size:.68rem;color:var(--text);cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;gap:2px;align-items:center;word-break:break-all}
+.live-cmd-btn:hover{border-color:var(--accent2);color:var(--accent2);background:#00d4ff08;transform:scale(1.03)}
+.live-cmd-btn:active{transform:scale(.97)}
+.live-cmd-btn.lc-owner{border-color:#f9731640;color:var(--orange)}
+.live-cmd-btn.lc-member{border-color:#22c55e40;color:var(--green)}
+.live-cmd-role-lbl{font-size:.54rem;padding:1px 4px;border-radius:3px}
+.live-cmd-role-lbl.r-admin{background:#7c6cfc18;color:var(--accent3)}
+.live-cmd-role-lbl.r-member{background:#22c55e18;color:var(--green)}
+.live-cmd-role-lbl.r-owner{background:#f9731618;color:var(--orange)}
+.live-mob-tabs{display:none;flex-shrink:0;border-bottom:1px solid var(--border);margin:0 20px}
+.live-mob-tab{flex:1;padding:9px;border:none;background:transparent;color:var(--muted2);font-size:.75rem;cursor:pointer;font-weight:700;border-bottom:3px solid transparent;transition:all .15s}
+.live-mob-tab.act{color:var(--accent2);border-bottom-color:var(--accent2)}
+.live-empty{text-align:center;color:var(--muted);font-size:.76rem;margin:auto;padding:20px}
+@media(max-width:900px){
+  .live-layout{grid-template-columns:1fr;height:auto;padding:8px 14px 16px;gap:8px}
+  .live-mob-tabs{display:flex}
+  .live-layout .live-panel{height:380px}
+  .live-layout[data-tab="groups"] #lp-chat,.live-layout[data-tab="groups"] #lp-cmds{display:none}
+  .live-layout[data-tab="chat"] #lp-groups,.live-layout[data-tab="chat"] #lp-cmds{display:none}
+  .live-layout[data-tab="cmds"] #lp-groups,.live-layout[data-tab="cmds"] #lp-chat{display:none}
+}
+@media(max-width:600px){.live-layout .live-panel{height:320px}.live-layout{padding:6px 10px 12px}}
 </style>
 </head>
 <body>
@@ -293,6 +336,8 @@ input.ck-input:focus{border-color:var(--accent)}
     <div class="nav-item" data-page="send" onclick="goto('send')"><span class="ni">💬</span> إرسال رسالة</div>
     <div class="nav-item" data-page="log" onclick="goto('log')"><span class="ni">📝</span> سجل الرسائل</div>
     <div class="nav-item" data-page="logs" onclick="goto('logs')"><span class="ni">📋</span> سجل النظام</div>
+    <div class="nav-section">الإدارة المباشرة</div>
+    <div class="nav-item" data-page="live" onclick="goto('live');loadLivePage()"><span class="ni">📡</span> تفعيل مباشر</div>
     <div class="nav-section">الإعدادات</div>
     <div class="nav-item" data-page="admins" onclick="goto('admins')"><span class="ni">👑</span> الأدمنز</div>
     <div class="nav-item" data-page="config" onclick="goto('config')"><span class="ni">🔧</span> الإعدادات</div>
@@ -480,6 +525,50 @@ input.ck-input:focus{border-color:var(--accent)}
     <div class="panel" style="margin-top:4px">
       <div class="panel-title"><span class="pt-icon">📊</span> إحصاء الحماية الفورية</div>
       <div id="prot-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LIVE CONTROL ══ -->
+<div id="page-live" class="page hidden">
+  <div class="page-header">
+    <div><div class="page-title"><span>📡</span> التحكم المباشر</div><div class="page-desc">مسنجر مصغر + تنفيذ أي أمر في أي مجموعة — بث فوري</div></div>
+    <button class="btn btn-outline btn-sm" onclick="loadLivePage()">🔄 تحديث</button>
+  </div>
+  <!-- Mobile tabs -->
+  <div class="live-mob-tabs" id="live-tabs">
+    <button class="live-mob-tab act" onclick="setLiveTab('groups',this)">👥 المجموعات</button>
+    <button class="live-mob-tab" onclick="setLiveTab('chat',this)">💬 الدردشة</button>
+    <button class="live-mob-tab" onclick="setLiveTab('cmds',this)">⚡ الأوامر</button>
+  </div>
+  <!-- 3-column layout -->
+  <div class="live-layout" id="live-layout" data-tab="groups">
+    <!-- Panel 1: Groups -->
+    <div class="live-panel" id="lp-groups">
+      <div class="live-panel-hdr">👥 المجموعات <span id="lp-grp-count" style="font-weight:400;color:var(--muted);font-size:.64rem;margin-right:auto"></span></div>
+      <input class="live-search" id="lp-search" placeholder="🔍 بحث بالاسم أو ID…" oninput="filterLiveGroups(this.value)"/>
+      <div id="lp-grp-list" style="overflow-y:auto;flex:1">
+        <div class="live-empty">جارٍ التحميل…</div>
+      </div>
+    </div>
+    <!-- Panel 2: Chat -->
+    <div class="live-panel" id="lp-chat">
+      <div class="live-panel-hdr" id="lp-chat-hdr">💬 اختر مجموعة من القائمة</div>
+      <div id="lp-msgs" style="flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:5px">
+        <div class="live-empty">اختر مجموعة لعرض رسائلها</div>
+      </div>
+      <div class="live-send-bar">
+        <input class="live-send-ipt" id="lp-send-input" placeholder="أرسل رسالة للمجموعة المحددة…" onkeydown="if(event.key==='Enter')sendLiveMsg()"/>
+        <button class="btn btn-primary btn-sm" onclick="sendLiveMsg()" style="padding:7px 12px">📤</button>
+      </div>
+    </div>
+    <!-- Panel 3: Commands -->
+    <div class="live-panel" id="lp-cmds">
+      <div class="live-panel-hdr">⚡ أوامر البوت</div>
+      <div style="padding:6px 8px;border-bottom:1px solid var(--border);font-size:.63rem;color:var(--muted2);flex-shrink:0">اضغط أي أمر لتنفيذه في المجموعة المحددة</div>
+      <div id="lp-cmd-grid" style="overflow-y:auto;flex:1;padding:7px;display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <div class="live-empty" style="grid-column:span 2">جارٍ التحميل…</div>
+      </div>
     </div>
   </div>
 </div>
@@ -847,7 +936,7 @@ $('login-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 function initSocket(){
   _socket=io({transports:['polling','websocket']});
   _socket.on('bot-status',d=>updateStatus(d));
-  _socket.on('message',d=>addLog(d));
+  _socket.on('message',d=>{addLog(d);liveAppendMsg(d);});
   _socket.on('command',d=>addCmdLog(d));
   _socket.on('cookies-updated',d=>{
     loadCookieStatus();
@@ -1418,6 +1507,106 @@ async function restartBot(){
   if(!confirm('إعادة تشغيل البوت الكاملة؟'))return;
   await apiFetch('/api/restart',{method:'POST'});
   toast('جارٍ إعادة التشغيل…','info');
+}
+
+/* ══ LIVE PAGE ══ */
+let _liveTID=null,_liveGroups=[],_liveCmds=[],_liveRoles={};
+function setLiveTab(tab,btn){
+  document.querySelectorAll('.live-mob-tab').forEach(b=>b.classList.remove('act'));
+  if(btn)btn.classList.add('act');
+  const lay=$('live-layout');if(lay)lay.setAttribute('data-tab',tab);
+}
+async function loadLivePage(){
+  const [gr,cr,cmdR]=await Promise.all([
+    apiFetch('/api/threads'),
+    apiFetch('/api/command-roles'),
+    apiFetch('/api/commands')
+  ]);
+  _liveGroups=gr.ok?gr.data:[];
+  _liveRoles=cr.ok?cr.data:{};
+  _liveCmds=cmdR.ok?cmdR.data:[];
+  const cnt=$('lp-grp-count');if(cnt)cnt.textContent=`(${_liveGroups.length})`;
+  renderLiveGroups(_liveGroups);
+  renderLiveCmds();
+}
+function renderLiveGroups(list){
+  const el=$('lp-grp-list');if(!el)return;
+  if(!list.length){el.innerHTML='<div class="live-empty">لا توجد مجموعات بعد — انتظر أول رسالة يستقبلها البوت</div>';return;}
+  el.innerHTML=list.map(g=>{
+    const sel=_liveTID===g.threadID?'sel':'';
+    return`<div class="live-grp-item ${sel}" data-tid="${g.threadID}" onclick="selectLiveGroup('${g.threadID}','${String(g.name||g.threadID).replace(/'/g,"\\'")}')">
+      <div class="live-grp-name">${g.name||g.threadID}</div>
+      <div class="live-grp-id">${g.threadID}</div>
+    </div>`;}).join('');
+}
+function filterLiveGroups(q){
+  const f=q?_liveGroups.filter(g=>(g.name||'').includes(q)||g.threadID.includes(q)):_liveGroups;
+  renderLiveGroups(f);
+}
+async function selectLiveGroup(tid,name){
+  _liveTID=tid;
+  const hdr=$('lp-chat-hdr');if(hdr)hdr.textContent=`💬 ${name}`;
+  document.querySelectorAll('.live-grp-item').forEach(el=>{
+    el.classList.toggle('sel',el.dataset.tid===tid);
+  });
+  const msgs=$('lp-msgs');if(!msgs)return;
+  msgs.innerHTML='<div class="live-empty" style="color:var(--accent2)">⏳ جارٍ تحميل الرسائل…</div>';
+  const r=await apiFetch(`/api/threads/${encodeURIComponent(tid)}/messages`);
+  msgs.innerHTML='';
+  const data=r.ok?(Array.isArray(r.data)?r.data:[]):[];
+  if(!data.length){msgs.innerHTML='<div class="live-empty">لا توجد رسائل محفوظة بعد — الرسائل الجديدة ستظهر هنا فوراً</div>';return;}
+  data.forEach(m=>_appendMsgEl(msgs,m));
+  msgs.scrollTop=msgs.scrollHeight;
+  // Switch to chat tab on mobile
+  const isMob=window.innerWidth<=900;
+  if(isMob){document.querySelectorAll('.live-mob-tab').forEach((b,i)=>{b.classList.toggle('act',i===1);});setLiveTab('chat',null);}
+}
+function _appendMsgEl(container,msg){
+  const empty=container.querySelector('.live-empty');if(empty)empty.remove();
+  const time=new Date(msg.timestamp||Date.now()).toLocaleTimeString('ar-DZ',{hour12:false,hour:'2-digit',minute:'2-digit'});
+  const isBot=msg.senderID===String(window._botUID||'');
+  const el=document.createElement('div');
+  el.className='live-msg-item'+(isBot?' self':'');
+  el.innerHTML=`<div class="live-msg-name" style="color:${isBot?'var(--accent)':'var(--accent2)'}">${msg.senderName||msg.senderID||'مجهول'}</div><div class="live-msg-body">${String(msg.body||'').slice(0,400)||'<em style="opacity:.5">رسالة بدون نص</em>'}</div><div class="live-msg-time">${time}</div>`;
+  container.appendChild(el);
+  while(container.children.length>100)container.removeChild(container.firstChild);
+}
+function liveAppendMsg(msg){
+  if(!_liveTID||msg.threadID!==_liveTID)return;
+  const msgs=$('lp-msgs');if(!msgs)return;
+  _appendMsgEl(msgs,msg);
+  msgs.scrollTop=msgs.scrollHeight;
+  // Update group last msg
+  const gEl=document.querySelector(`.live-grp-item[data-tid="${msg.threadID}"]`);
+  if(gEl){const lbl=gEl.querySelector('.live-grp-last');if(lbl)lbl.textContent=String(msg.body||'').slice(0,40);}
+}
+function renderLiveCmds(){
+  const grid=$('lp-cmd-grid');if(!grid)return;
+  if(!_liveCmds.length){grid.innerHTML='<div class="live-empty" style="grid-column:span 2">لا توجد أوامر</div>';return;}
+  grid.innerHTML=_liveCmds.map(c=>{
+    const role=_liveRoles[c.name]||(c.ownerOnly?'owner':c.adminOnly===false?'member':'admin');
+    const cls=c.ownerOnly?'lc-owner':role==='member'?'lc-member':'';
+    const rlbl=c.ownerOnly?'👑 مالك':role==='member'?'🌐 عام':'🔒 أدمن';
+    const rcls=c.ownerOnly?'r-owner':role==='member'?'r-member':'r-admin';
+    return`<button class="live-cmd-btn ${cls}" onclick="runLiveCmd('${c.name}')">
+      <span>${c.name}</span>
+      <span class="live-cmd-role-lbl ${rcls}">${rlbl}</span>
+    </button>`;}).join('');
+}
+async function runLiveCmd(cmdName){
+  if(!_liveTID){toast('اختر مجموعة أولاً ثم اضغط الأمر','err');setLiveTab('groups',document.querySelector('.live-mob-tab'));return;}
+  const r=await apiFetch('/api/execute',{method:'POST',body:JSON.stringify({command:cmdName,args:[],threadID:_liveTID})});
+  if(r.ok){const d=r.data;toast(`⚡ ${cmdName}: ${d.ok||0}/${d.total||1} ناجح`,d.ok>0?'ok':'err');}
+  else toast(r.data?.error||'خطأ في التنفيذ','err');
+}
+async function sendLiveMsg(){
+  const input=$('lp-send-input');if(!input)return;
+  const message=input.value.trim();
+  if(!message)return;
+  if(!_liveTID){toast('اختر مجموعة أولاً','err');return;}
+  const r=await apiFetch('/api/send',{method:'POST',body:JSON.stringify({threadID:_liveTID,message})});
+  if(r.ok){input.value='';toast('✅ أُرسلت','ok');}
+  else toast(r.data?.error||'خطأ في الإرسال','err');
 }
 
 /* ══ READY ══ */
