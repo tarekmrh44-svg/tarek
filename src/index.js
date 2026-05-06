@@ -386,6 +386,12 @@ async function main() {
   await initDB();
   log.ok("قاعدة البيانات جاهزة");
 
+  // Init runtime globals for new systems
+  if (!global._lockedThreads) global._lockedThreads = new Set();
+  if (global._globalLock === undefined) global._globalLock = false;
+  if (!global._broadcasts) global._broadcasts = new Map();
+  if (!global._nicknameJobs) global._nicknameJobs = new Map();
+
   const defaults = {
     botName: "jarfis", prefix: "/", ownerID: "", adminIDs: [],
     dashboardPort: 5000, timezone: "Africa/Algiers",
@@ -397,6 +403,7 @@ async function main() {
     groupEvents:     { welcomeMessage: "", leaveMessage: "" },
     backupIntervalMinutes: 60,
     cronJobs: [],
+    commandRoles: {}, // أدوار الأوامر: "admin" (افتراضي) أو "member"
     userAgent: "Mozilla/5.0 (Linux; Android 12; M2102J20SG) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Mobile Safari/537.36",
   };
 
