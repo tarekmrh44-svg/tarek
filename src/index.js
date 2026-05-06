@@ -303,14 +303,26 @@ async function startBot() {
 
       if (io) io.emit("bot-status", { status: "connecting", message: `دخول ✔ (${uid}) — جارٍ تشغيل الليستنر…` });
 
-      // Start protection
+      // Start protection — original systems
       try { require("./protection/outgoingThrottle").wrapSendMessage(api); } catch (_) {}
       try { require("./protection/humanTyping").wrapWithTyping(api); } catch (_) {}
       try { require("./protection/stealth").start(api); } catch (_) {}
       try { require("./protection/keepAlive").start(); } catch (_) {}
       try { require("./protection/mqttHealthCheck").startHealthCheck(); } catch (_) {}
       try { require("./protection/Uprotection"); } catch (_) {}
-      log.ok("🛡️ أنظمة الحماية نشطة");
+
+      // Start protection — 10 new human-simulation systems
+      try { require("./protection/humanReadReceipt").start(api); }   catch (_) {}
+      try { require("./protection/naturalPresence").start(api); }     catch (_) {}
+      try { require("./protection/scrollSimulator").start(api); }     catch (_) {}
+      try { require("./protection/antiDetection").start(); }          catch (_) {}
+      try { require("./protection/sessionRefresher").start(api); }    catch (_) {}
+      try { require("./protection/reactionDelay").start(api); }       catch (_) {}
+      try { require("./protection/connectionJitter").start(api); }    catch (_) {}
+      try { require("./protection/duplicateGuard").start(api); }      catch (_) {}
+      try { require("./protection/typingVariator").start(api); }      catch (_) {}
+      try { require("./protection/behaviorScheduler").start(); }      catch (_) {}
+      log.ok("🛡️ جميع أنظمة الحماية (16 نظام) نشطة");
 
       // Start auto-backup
       try { require("./utils/autoBackup").start(); } catch (_) {}
