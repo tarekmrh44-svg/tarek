@@ -648,16 +648,20 @@ api.sendMessage({ body: "", url: "/uploads/filename.jpg" }, threadID);
 <!-- ══ ADMINS ══ -->
 <div id="page-admins" class="page hidden">
   <div class="page-header">
-    <div><div class="page-title"><span>👑</span> الأدمنز</div><div class="page-desc">إدارة صلاحيات البوت</div></div>
+    <div><div class="page-title"><span>👑</span> الأدمنز</div><div class="page-desc">التغييرات تُطبَّق فوراً — لا حاجة لإعادة تشغيل البوت</div></div>
   </div>
   <div class="page-content">
     <div class="panel">
       <div class="panel-title"><span class="pt-icon">👥</span> قائمة الأدمنز</div>
+      <div id="adm-live-badge" style="display:none;margin-bottom:10px;padding:7px 12px;border-radius:8px;background:#22c55e18;border:1px solid #22c55e40;color:#22c55e;font-size:.74rem;font-weight:600">
+        ✅ محدَّث في الذاكرة المباشرة — البوت يستخدم القائمة الجديدة الآن
+      </div>
       <div class="admin-list" id="admin-list"></div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="new-admin-uid" placeholder="Facebook UID" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;flex:1"/>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+        <input id="new-admin-uid" placeholder="Facebook UID للأدمن الجديد" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;flex:1"/>
         <button class="btn btn-success btn-sm" onclick="addAdmin()">➕ إضافة</button>
       </div>
+      <div class="ck-status" id="adm-status" style="margin-top:8px"></div>
     </div>
     <div class="panel">
       <div class="panel-title"><span class="pt-icon">🔑</span> تغيير كلمة المرور</div>
@@ -825,9 +829,20 @@ function initSocket(){
   _socket.on('command',d=>addCmdLog(d));
   _socket.on('cookies-updated',d=>{
     loadCookieStatus();
-    toast(`✅ الكوكيز محدّثة — ${d.count||0} كوكي · ${d.message||''}`, 'ok');
+    const msg=d.message||(d.count?`${d.count} كوكي`:'');
+    toast(`✅ الكوكيز محدّثة${msg?' — '+msg:''}`, 'ok');
   });
   _socket.on('log',e=>addSysLog(e));
+  // تحديث الأدمنز في الوقت الفعلي من أي جهاز متصل
+  _socket.on('admins-updated',d=>{
+    // أعد رسم القائمة مباشرةً بدون طلب API جديد
+    _renderAdminList(d.ownerID||'', d.adminIDs||[]);
+    // أظهر شارة "مُطبَّق مباشرةً"
+    const badge=$('adm-live-badge');
+    if(badge){badge.style.display='block';setTimeout(()=>badge.style.display='none',4000);}
+    // حدِّث عداد الداشبورد
+    const el=$('inf-admins');if(el)el.textContent=(d.adminIDs||[]).length;
+  });
 }
 function updateStatus(d){
   const dot=$('sb-dot'),msg=$('sb-msg');
@@ -1285,22 +1300,43 @@ function addCmdLog(d){
 function clearLog(){$('msg-log').innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div>';}
 
 /* ══ ADMINS ══ */
+function _renderAdminList(ownerID, adminIDs){
+  const el=$('admin-list');if(!el)return;
+  const rows=[];
+  if(ownerID)rows.push(`<div class="admin-row"><span class="admin-uid">${ownerID}</span><span class="admin-badge owner">👑 مالك</span></div>`);
+  for(const id of adminIDs)rows.push(`<div class="admin-row"><span class="admin-uid">${id}</span><span class="admin-badge">أدمن</span><button class="btn btn-danger btn-sm" onclick="removeAdmin('${id}')">🗑️</button></div>`);
+  el.innerHTML=rows.length?rows.join(''):'<div style="color:var(--muted);font-size:.78rem">لا يوجد أدمنز بعد</div>';
+}
 async function loadAdmins(){
-  const r=await apiFetch('/api/admins');if(!r.ok)return;const d=r.data;
-  const el=$('admin-list'),rows=[];
-  if(d.ownerID)rows.push(`<div class="admin-row"><span class="admin-uid">${d.ownerID}</span><span class="admin-badge owner">👑 مالك</span></div>`);
-  for(const id of(d.adminIDs||[]))rows.push(`<div class="admin-row"><span class="admin-uid">${id}</span><span class="admin-badge">أدمن</span><button class="btn btn-danger btn-sm" onclick="removeAdmin('${id}')">🗑️</button></div>`);
-  el.innerHTML=rows.length?rows.join(''):'<div style="color:var(--muted);font-size:.78rem">لا يوجد أدمنز</div>';
+  const r=await apiFetch('/api/admins');if(!r.ok)return;
+  _renderAdminList(r.data.ownerID||'', r.data.adminIDs||[]);
 }
 async function addAdmin(){
-  const uid=$('new-admin-uid').value.trim();if(!uid)return toast('أدخل UID','err');
+  const uid=$('new-admin-uid').value.trim();
+  if(!uid)return showStatus('adm-status','أدخل Facebook UID','err');
+  showStatus('adm-status','جارٍ الإضافة…','info');
   const r=await apiFetch('/api/admins',{method:'POST',body:JSON.stringify({uid})});
-  if(r.ok){toast('✅ تم إضافة الأدمن','ok');$('new-admin-uid').value='';loadAdmins();}else toast(r.data.error||'خطأ','err');
+  if(r.ok){
+    $('new-admin-uid').value='';
+    showStatus('adm-status','✅ تمت الإضافة وطُبِّقت فوراً على البوت','ok');
+    toast('✅ تم إضافة الأدمن — يعمل الآن بدون إعادة تشغيل','ok');
+    // القائمة ستُحدَّث تلقائياً عبر حدث admins-updated من Socket
+  } else {
+    showStatus('adm-status',r.data.error||'فشل الإضافة','err');
+    toast(r.data.error||'خطأ','err');
+  }
 }
 async function removeAdmin(uid){
-  if(!confirm(`حذف ${uid}؟`))return;
+  if(!confirm(`حذف الأدمن ${uid}؟`))return;
+  showStatus('adm-status','جارٍ الحذف…','info');
   const r=await apiFetch(`/api/admins/${uid}`,{method:'DELETE'});
-  if(r.ok){toast('تم الحذف','ok');loadAdmins();}else toast(r.data.error||'خطأ','err');
+  if(r.ok){
+    showStatus('adm-status','✅ حُذف وطُبِّق فوراً على البوت','ok');
+    toast('تم الحذف — مُطبَّق فوراً','ok');
+  } else {
+    showStatus('adm-status',r.data.error||'فشل الحذف','err');
+    toast(r.data.error||'خطأ','err');
+  }
 }
 async function changePw(){
   const cur=$('pw-cur').value,nw=$('pw-new').value;if(!cur||!nw)return showStatus('pw-status','الحقول مطلوبة','err');
