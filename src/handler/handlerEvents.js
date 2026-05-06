@@ -87,6 +87,10 @@ module.exports = async function handlerEvents(api, event, commands) {
     // Ignore self
     if (senderID === api.getCurrentUserID()) return;
 
+    // ── Permissions (computed early for lock check) ────────────────────────
+    const isOwner = global.isOwner ? global.isOwner(senderID) : String(senderID) === String(global.ownerID);
+    const isAdmin = global.isAdmin ? global.isAdmin(senderID) : isOwner || (config.adminIDs||[]).map(String).includes(String(senderID));
+
     // Resolve names (non-blocking)
     const [senderName, threadName] = await Promise.all([
       resolveUser(api, senderID),
@@ -102,15 +106,19 @@ module.exports = async function handlerEvents(api, event, commands) {
       isGroup ? getOrCreateThread(threadID, threadName).catch(() => {}) : Promise.resolve(),
     ]);
 
+    const msgData = { senderID, senderName, threadID, threadName, body, isGroup, messageID, timestamp: Date.now() };
+
+    // Buffer message for live dashboard page
+    if (typeof global._bufferMsg === "function") global._bufferMsg(msgData);
+
     // Emit to dashboard
-    if (io) io.emit("message", {
-      senderID, senderName,
-      threadID, threadName,
-      body, isGroup, messageID,
-      timestamp: Date.now(),
-    });
+    if (io) io.emit("message", msgData);
 
     if (!isCmd) return;
+
+    // ── Lock Check ────────────────────────────────────────────────────────────
+    const _locked = global._lockedThreads || new Set();
+    if ((global._globalLock || _locked.has(threadID)) && !isAdmin) return;
 
     // ── Command Dispatch ──────────────────────────────────────────────────────
     const args    = body.slice(prefix.length).trim().split(/\s+/);
@@ -118,23 +126,27 @@ module.exports = async function handlerEvents(api, event, commands) {
     const cmd     = commands.get(cmdName);
     if (!cmd) return;
 
-    // Permission checks
-    const isOwner = global.isOwner ? global.isOwner(senderID) : String(senderID) === String(global.ownerID);
-    const isAdmin = global.isAdmin ? global.isAdmin(senderID) : isOwner || (config.adminIDs||[]).map(String).includes(String(senderID));
-
+    // Permission checks — commandRoles system
+    // ownerOnly is always respected
     if (cmd.config.ownerOnly && !isOwner)
       return api.sendMessage("❌ هذا الأمر للمالك فقط.", threadID);
-    if (cmd.config.adminOnly && !isAdmin)
-      return api.sendMessage("❌ هذا الأمر للأدمنز فقط.", threadID);
 
-    // Anti-spam
-    const spam = checkSpam(senderID);
-    if (spam.exceeded) {
-      if (!spam.warned) {
-        spam.setWarn();
-        api.sendMessage("⚠️ أنت تستخدم الأوامر بسرعة كبيرة، انتظر قليلاً!", threadID);
+    // All commands are admin-only by default unless commandRoles marks them as "member"
+    const cmdRoles = global.config?.commandRoles || {};
+    const cmdRole  = cmdRoles[cmdName] || "admin";
+    if (cmdRole !== "member" && !isAdmin)
+      return api.sendMessage("❌ هذا الأمر لأدمن البوت فقط.\nلا يوجد مشرفو مجموعة — فقط أدمنز البوت.", threadID);
+
+    // Anti-spam (skip for admins)
+    if (!isAdmin) {
+      const spam = checkSpam(senderID);
+      if (spam.exceeded) {
+        if (!spam.warned) {
+          spam.setWarn();
+          api.sendMessage("⚠️ أنت تستخدم الأوامر بسرعة كبيرة، انتظر قليلاً!", threadID);
+        }
+        return;
       }
-      return;
     }
 
     // Log command
