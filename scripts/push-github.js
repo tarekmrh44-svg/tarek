@@ -10,8 +10,8 @@ const path = require("path");
 const https = require("https");
 
 const TOKEN  = process.env.GH_TOKEN;
-const OWNER  = "castrolmocro";
-const REPO   = "fb-messenger-bot";
+const OWNER  = "tarekmrh44-svg";
+const REPO   = "tarek";
 const BRANCH = "main";
 
 if (!TOKEN) { console.error("❌ GH_TOKEN not set"); process.exit(1); }
