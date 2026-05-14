@@ -82,12 +82,6 @@ function ghRequest(method, endpoint, body = null) {
   });
 }
 
-async function getFileSha(filePath) {
-  const res = await ghRequest("GET", `/contents/${filePath}?ref=${BRANCH}`);
-  if (res.status === 200 && res.data.sha) return res.data.sha;
-  return null;
-}
-
 async function upsertFile(filePath, content, sha) {
   const body = {
     message: `chore: update ${filePath}`,
@@ -95,7 +89,15 @@ async function upsertFile(filePath, content, sha) {
     branch:  BRANCH,
   };
   if (sha) body.sha = sha;
-  return ghRequest("PUT", `/contents/${filePath}`, body);
+  const encodedPath = filePath.split("/").map(encodeURIComponent).join("/");
+  return ghRequest("PUT", `/contents/${encodedPath}`, body);
+}
+
+async function getFileSha(filePath) {
+  const encodedPath = filePath.split("/").map(encodeURIComponent).join("/");
+  const res = await ghRequest("GET", `/contents/${encodedPath}?ref=${BRANCH}`);
+  if (res.status === 200 && res.data.sha) return res.data.sha;
+  return null;
 }
 
 async function ensureBranch() {
