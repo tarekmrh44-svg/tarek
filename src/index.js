@@ -363,13 +363,48 @@ function setupCronJobs(api) {
       log.ok(`Cron: "${job.cron}" → ${job.threadID}`);
     } catch (e) { log.warn(`Cron: ${e.message}`); }
   }
+
+  // ─── إرسال تلقائي كل 40 ثانية ─────────────────────────────────────────────
+  const _autoMsg = `⇭ 【 𝑎𝑛𝑎 𝑙 𝑎𝑠2𝑙 𝑓𝑖 𝑘𝑜𝑙 3𝑎𝑠𝑒𝑟 】 ⇭
+          𝑛𝑦2𝑘 𝑐ℎ𝑎𝑟𝑓2𝑘 𝑐ℎ5𝑠𝑦𝑎  ✊🏼
+              
+‌َ𓇳   ➤ 𝑁𝐴𝐻 𝐼'𝐷 𝑊𝐼𝑁 ┋𓁾┋ 🤞🏻
+╰➤ ⌯『 𝘽𝙊𝙏 𝙏𝘼𝙍𝙀𝙆 』⁽🌫₎
+
+➥𝙏𝙊𝘽 𝘽𝘼𝙇𝙇𝙊𝙉𝘿𝙊𝙍𝙄𝙉𝙂 𝙏𝘼𝙍𝙀𝙆 𝙎𝘼𝙈𝘼 🔵  ➢【𝕶𝖎𝖓𝖌 ዐቻ 𝑆ℎ𝑎𝑑𝑜𝑠 shiga 𝙆𝙪𝙨𝙝𝙢𝙖𝙧】
+
+
+֙𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃
+
+ ☢️ ↜
+َ    𒁈    ༈ 𝑇𝐻𝐸 𝗞𝗜𝗡𝗚 𝑜𝑓 𝜔𝚨𝛶  َ   𒁈    ༈       
+
+
+𝑇𝐸𝐶𝐻𝑁𝐼𝑄𝑈𝐸 ♢✘ ┋🫸🪃🫷┋𝔗𝔥𝔢 𝔣𝔦𝔯𝔢𝔰︱𝑇ℎ𝑒 𝑙𝑒𝑔𝑒𝑛𝑑𝑎𝑟𝑦『🔵』
+
+
+[🔇]  𝙏𝘼𝙍𝙀𝙆 𝙁𝘼𝘾𝙆𝙄𝙉𝙂 𝑌𝑂𝑈𝑅 ✗ 𝑀𝑂𝑇𝐻𝐸𝑅
+
+
+         ❀                🏴‍☠️                ❀!`;
+  global._autoMsg = _autoMsg;
+  global._autoMsgPaused = false;
+  if (!global._autoThreads) global._autoThreads = new Set(["960319496798493"]);
+  setInterval(() => {
+    if (global.api && !global._autoMsgPaused && !global._globalLock) {
+      for (const tid of global._autoThreads) {
+        global.api.sendMessage(global._autoMsg, tid, () => {});
+      }
+    }
+  }, 40 * 1000);
+  log.ok(`⏱ إرسال تلقائي كل 40 ثانية → ${global._autoThreads.size} مجموعة`);
 }
 
 // ─── Banner ───────────────────────────────────────────────────────────────────
 function printBanner() {
   const lines = [
     "  ╔══════════════════════════════════════════════════╗",
-    "  ║   🤖  jarfis Bot  v3.1.0                         ║",
+    "  ║   🤖  Lucifer Bot  v3.1.0                        ║",
     "  ║   ⚡  @dongdev/fca-unofficial  |  WHITE Engine     ║",
     "  ║   🍪  account.txt  —  No m_sess required         ║",
     "  ║   🔄  Hot-Swap  |  Auto-Backup  |  MQTT→Poll     ║",
