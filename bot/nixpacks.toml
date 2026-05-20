@@ -7,6 +7,7 @@ nixPkgs = [
   "libjpeg",
   "giflib",
   "librsvg",
+  "libuuid",
   "pkg-config",
   "python3",
   "gcc",
@@ -17,4 +18,4 @@ nixPkgs = [
 cmds = ["npm install --legacy-peer-deps"]
 
 [start]
-cmd = "npm start"
+cmd = "sh start.sh"
