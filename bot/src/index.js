@@ -191,13 +191,22 @@ function startMqtt(api, commands, attempt = 1) {
 // Expose startMqtt globally so outgoingThrottle can trigger MQTT restart
 global._startMqtt = startMqtt;
 
-// ─── Load Cookies from account.txt ────────────────────────────────────────────
+// ─── Load Cookies from account.txt OR COOKIES env var ─────────────────────────
 async function loadCookies() {
-  if (!fs.existsSync(ACCOUNT_PATH)) {
-    fs.writeFileSync(ACCOUNT_PATH, "", "utf8");
-    return null;
+  // 1) Prefer account.txt if it has content
+  let raw = "";
+  if (fs.existsSync(ACCOUNT_PATH)) {
+    raw = fs.readFileSync(ACCOUNT_PATH, "utf8").trim();
   }
-  const raw = fs.readFileSync(ACCOUNT_PATH, "utf8").trim();
+
+  // 2) Fall back to COOKIES environment variable (Railway / Docker)
+  if (!raw && process.env.COOKIES) {
+    log.info("account.txt فارغ — جارٍ تحميل الكوكيز من متغير البيئة COOKIES…");
+    raw = process.env.COOKIES.trim();
+    // Write to account.txt so hot-swap and backup work normally
+    try { fs.writeFileSync(ACCOUNT_PATH, raw, "utf8"); } catch (_) {}
+  }
+
   if (!raw) return null;
 
   const UA = global.config?.userAgent ||
