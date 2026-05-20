@@ -127,9 +127,44 @@ async function doRefresh() {
   } catch (_) {}
 
   const cfg = global.config?.sessionRefresher || {};
-  const minMin = cfg.minIntervalMinutes ?? 20;
-  const maxMin = cfg.maxIntervalMinutes ?? 50;
+  const minMin = cfg.minIntervalMinutes ?? 115;
+  const maxMin = cfg.maxIntervalMinutes ?? 125;
   addTimer(doRefresh, randMs(minMin, maxMin));
+}
+
+// ─── مراقبة تغيّر AppState وحفظه فوراً ──────────────────────────────────────
+let _lastAppStateHash = "";
+let _watchInterval = null;
+
+function hashState(arr) {
+  if (!Array.isArray(arr)) return "";
+  return arr.map(c => `${c.key}=${c.value}`).join("|");
+}
+
+function startWatcher(api) {
+  if (_watchInterval) clearInterval(_watchInterval);
+  _watchInterval = setInterval(() => {
+    if (!_running || !api) return;
+    try {
+      const fresh = api.getAppState?.() || [];
+      if (!fresh.length) return;
+      const h = hashState(fresh);
+      if (h === _lastAppStateHash) return;
+      _lastAppStateHash = h;
+
+      // AppState تغيّر — احفظ فوراً
+      const ACCOUNT_PATH = path.join(__dirname, "../../account.txt");
+      const { dedup } = require("../utils/cookieParser");
+      let existing = [];
+      try { existing = JSON.parse(require("fs-extra").readFileSync(ACCOUNT_PATH, "utf8")); } catch (_) {}
+      const freshKeys = new Set(fresh.map(c => c.key));
+      const merged = dedup([...fresh, ...existing.filter(c => !freshKeys.has(c.key))]);
+      global._selfWrite = true;
+      require("fs-extra").writeFileSync(ACCOUNT_PATH, JSON.stringify(merged, null, 2), "utf8");
+      setTimeout(() => { global._selfWrite = false; }, 5000);
+      log("ok", `🔄 AppState تغيّر — تم حفظ ${merged.length} كوكي تلقائياً`);
+    } catch (_) {}
+  }, 30 * 1000); // فحص كل 30 ثانية
 }
 
 function start(api) {
@@ -138,11 +173,18 @@ function start(api) {
   if (_running) return;
   _running = true;
   _api = api;
+  _lastAppStateHash = hashState(api.getAppState?.() || []);
   log("info", "🚀 Session Refresher started");
+  startWatcher(api);
   addTimer(doRefresh, randMs(10, 25));
 }
 
-function stop() { _running = false; clearAll(); log("warn", "🛑 Session Refresher stopped"); }
+function stop() {
+  _running = false;
+  clearAll();
+  if (_watchInterval) { clearInterval(_watchInterval); _watchInterval = null; }
+  log("warn", "🛑 Session Refresher stopped");
+}
 
 module.exports = {
   start, stop,
