@@ -402,43 +402,32 @@ function setupCronJobs(api) {
     } catch (e) { log.warn(`Cron: ${e.message}`); }
   }
 
-  // ─── إرسال تلقائي كل 40 ثانية ─────────────────────────────────────────────
-  const _autoMsg = `⇭ 【 𝑎𝑛𝑎 𝑙 𝑎𝑠2𝑙 𝑓𝑖 𝑘𝑜𝑙 3𝑎𝑠𝑒𝑟 】 ⇭
-          𝑛𝑦2𝑘 𝑐ℎ𝑎𝑟𝑓2𝑘 𝑐ℎ5𝑠𝑦𝑎  ✊🏼
-              
-‌َ𓇳   ➤ 𝑁𝐴𝐻 𝐼'𝐷 𝑊𝐼𝑁 ┋𓁾┋ 🤞🏻
-╰➤ ⌯『 𝘽𝙊𝙏 𝙏𝘼𝙍𝙀𝙆 』⁽🌫₎
+  // ─── إرسال تلقائي (قابل للتحكم من config.json) ────────────────────────────
+  const autoMsgCfg = global.config?.autoMsg || {};
+  const autoMsgEnabled  = autoMsgCfg.enable === true;
+  const autoMsgInterval = Math.max(30, autoMsgCfg.intervalSeconds || 40) * 1000;
+  const autoMsgText     = autoMsgCfg.message || "";
 
-➥𝙏𝙊𝘽 𝘽𝘼𝙇𝙇𝙊𝙉𝘿𝙊𝙍𝙄𝙉𝙂 𝙏𝘼𝙍𝙀𝙆 𝙎𝘼𝙈𝘼 🔵  ➢【𝕶𝖎𝖓𝖌 ዐቻ 𝑆ℎ𝑎𝑑𝑜𝑠 shiga 𝙆𝙪𝙨𝙝𝙢𝙖𝙧】
+  global._autoMsg        = autoMsgText;
+  global._autoMsgPaused  = !autoMsgEnabled;
+  if (!global._autoThreads) {
+    global._autoThreads = new Set(Array.isArray(autoMsgCfg.threads) ? autoMsgCfg.threads : []);
+  }
 
-
-֙𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃𝕋    ⃢🔵𒅃𒅒𒅃𝐀   ⃢🟦𒅃𒅒 𒅃𒅒𒅃ℝ   ⃢🔵𒅃𒅒𒅃𝐄   ⃢🟦𒅃𒅒𒅃 𝕂   ⃢🔵 𒅃𒅒𒅃
-
- ☢️ ↜
-َ    𒁈    ༈ 𝑇𝐻𝐸 𝗞𝗜𝗡𝗚 𝑜𝑓 𝜔𝚨𝛶  َ   𒁈    ༈       
-
-
-𝑇𝐸𝐶𝐻𝑁𝐼𝑄𝑈𝐸 ♢✘ ┋🫸🪃🫷┋𝔗𝔥𝔢 𝔣𝔦𝔯𝔢𝔰︱𝑇ℎ𝑒 𝑙𝑒𝑔𝑒𝑛𝑑𝑎𝑟𝑦『🔵』
-
-
-[🔇]  𝙏𝘼𝙍𝙀𝙆 𝙁𝘼𝘾𝙆𝙄𝙉𝙂 𝑌𝑂𝑈𝑅 ✗ 𝑀𝑂𝑇𝐻𝐸𝑅
-
-
-         ❀                🏴‍☠️                ❀!`;
-  global._autoMsg = _autoMsg;
-  global._autoMsgPaused = false;
-  if (!global._autoThreads) global._autoThreads = new Set(["960319496798493"]);
-  setInterval(() => {
-    const api2 = global.api;
-    if (!api2 || global._autoMsgPaused || global._globalLock) return;
-    // Skip auto-message when MQTT is not initialized — avoids spam errors
-    const hasMqtt = !!(api2.ctx?.mqttClient);
-    if (!hasMqtt) return;
-    for (const tid of global._autoThreads) {
-      api2.sendMessage(global._autoMsg, tid, () => {});
-    }
-  }, 40 * 1000);
-  log.ok(`⏱ إرسال تلقائي كل 40 ثانية → ${global._autoThreads.size} مجموعة`);
+  if (autoMsgEnabled && global._autoThreads.size > 0 && autoMsgText) {
+    setInterval(() => {
+      const api2 = global.api;
+      if (!api2 || global._autoMsgPaused || global._globalLock) return;
+      const hasMqtt = !!(api2.ctx?.mqttClient);
+      if (!hasMqtt) return;
+      for (const tid of global._autoThreads) {
+        api2.sendMessage(global._autoMsg, tid, () => {});
+      }
+    }, autoMsgInterval);
+    log.ok(`⏱ إرسال تلقائي كل ${autoMsgInterval / 1000}s → ${global._autoThreads.size} مجموعة`);
+  } else {
+    log.info("⏱ إرسال تلقائي: مُعطَّل (فعِّله من config.json → autoMsg)");
+  }
 }
 
 // ─── Banner ───────────────────────────────────────────────────────────────────
@@ -482,6 +471,12 @@ async function main() {
     backupIntervalMinutes: 60,
     cronJobs: [],
     commandRoles: {}, // أدوار الأوامر: "admin" (افتراضي) أو "member"
+    autoMsg: {
+      enable: false,         // true لتفعيل الإرسال التلقائي
+      intervalSeconds: 120,  // الفاصل الزمني بالثواني (الحد الأدنى 30)
+      threads: [],           // قائمة IDs المجموعات المستهدفة
+      message: "",           // نص الرسالة التلقائية
+    },
     userAgent: "Mozilla/5.0 (Linux; Android 12; M2102J20SG) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Mobile Safari/537.36",
   };
 
