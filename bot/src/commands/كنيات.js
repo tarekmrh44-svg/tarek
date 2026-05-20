@@ -6,10 +6,10 @@ if (!global._nicknameCooldown)global._nicknameCooldown= new Map();
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-const MONITOR_COOLDOWN = 600;
-const LOOP_BASE        = 4000;
-const BATCH_SIZE       = 5;    // عدد الطلبات المتوازية
-const BATCH_DELAY      = 700;  // تأخير بين كل دفعة
+const MONITOR_COOLDOWN = 300;
+const LOOP_BASE        = 1500;
+const BATCH_SIZE       = 20;   // عدد الطلبات المتوازية — سريع جداً
+const BATCH_DELAY      = 80;   // تأخير بين كل دفعة
 
 async function getMembers(api, threadID) {
   const info = await new Promise((res, rej) =>
