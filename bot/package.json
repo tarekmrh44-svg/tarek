@@ -5,8 +5,8 @@
   "type": "commonjs",
   "description": "Facebook Messenger Userbot powered by @dongdev/fca-unofficial",
   "scripts": {
-    "start": "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libuuid.so.1 node src/index.js",
-    "dev": "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libuuid.so.1 node src/index.js",
+    "start": "sh start.sh",
+    "dev": "sh start.sh",
     "postinstall": "node scripts/patch-fca.js"
   },
   "dependencies": {
