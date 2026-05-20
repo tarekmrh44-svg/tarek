@@ -107,15 +107,59 @@ async function applyThrottle(threadID) {
   globalSendTimes.push(ts);
 }
 
+// ─── MQTT reconnect trigger (debounced) ───────────────────────────────────────
+let _mqttRestartTimer = null;
+
+function triggerMqttRestart(api) {
+  if (_mqttRestartTimer) return;
+  log("warn", "sendMessage: MQTT ميت → إعادة تشغيل MQTT خلال 8s…");
+  _mqttRestartTimer = setTimeout(() => {
+    _mqttRestartTimer = null;
+    try {
+      const currentApi = global.api;
+      if (!currentApi || currentApi !== api) return;
+      const restartFn = global._startMqtt;
+      if (typeof restartFn === "function") {
+        log("warn", "↺ إعادة تشغيل MQTT listener…");
+        try {
+          if (typeof currentApi.stopListening === "function") {
+            currentApi.stopListening(() => {});
+          }
+        } catch (_) {}
+        setTimeout(() => {
+          if (global.api === currentApi && typeof global._startMqtt === "function") {
+            global._startMqtt(currentApi, global.commands, 1);
+          }
+        }, 2000);
+      } else {
+        log("warn", "↺ _startMqtt غير متاح → إعادة تسجيل الدخول…");
+        if (typeof global.reLoginBot === "function") global.reLoginBot();
+      }
+    } catch (e) {
+      log("warn", `MQTT restart error: ${e.message}`);
+    }
+  }, 8000);
+}
+
 function wrapSendMessage(api) {
   if (api.__throttleWrapped) return;
   api.__throttleWrapped = true;
   const _orig = api.sendMessage.bind(api);
   api.sendMessage = async function(msg, threadID, callback, messageID) {
     try { await applyThrottle(String(threadID)); } catch (_) {}
-    return _orig(msg, threadID, callback, messageID);
+    try {
+      return await _orig(msg, threadID, callback, messageID);
+    } catch (e) {
+      const errMsg = e?.message || String(e);
+      if (errMsg.includes("MQTT client is not initialized")) {
+        triggerMqttRestart(api);
+        if (typeof callback === "function") callback(e);
+        return;
+      }
+      throw e;
+    }
   };
-  log("info", "✅ Outgoing throttle active");
+  log("info", "✅ Outgoing throttle + MQTT guard active");
 }
 
 module.exports = {
