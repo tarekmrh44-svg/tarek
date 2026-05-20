@@ -4,6 +4,7 @@
  * 1. Cookie merger: merge facebook.com + messenger.com cookies for MQTT headers
  * 2. MQTT host → edge-chat.messenger.com when m_sess cookie present
  * 3. WebSocket Origin/Referer → messenger.com when using messenger host
+ * 4. sendTypingIndicator: silently return when MQTT not initialized (no spam errors)
  */
 
 const fs   = require("fs");
@@ -70,6 +71,24 @@ if (src.includes(OLD_REF)) {
   changed = true;
 } else {
   console.log("  ℹ Referer header: pattern not found (may already be handled)");
+}
+
+// ─── 5. sendTypingIndicator: silently return when MQTT not initialized ─────────
+// Without this patch, every typing indicator attempt when MQTT is down throws
+// "MQTT client is not initialized" and spams the console with errors.
+const OLD_TYPING = `      assertMqttCapability(ctx);\n      const threadIDs = Array.isArray(threadID) ? threadID : [threadID];\n      if (!threadIDs.length || threadIDs.some((value) => value === null || typeof value === "undefined" || value === "")) {`;
+const NEW_TYPING = `      if (!hasMqttClient(ctx)) { cb(null); return promise; }\n      assertMqttCapability(ctx);\n      const threadIDs = Array.isArray(threadID) ? threadID : [threadID];\n      if (!threadIDs.length || threadIDs.some((value) => value === null || typeof value === "undefined" || value === "")) {`;
+
+if (!src.includes('if (!hasMqttClient(ctx)) { cb(null); return promise; }')) {
+  if (src.includes(OLD_TYPING)) {
+    src = src.replace(OLD_TYPING, NEW_TYPING);
+    console.log("  ✔ Patched: sendTypingIndicator silent fail when MQTT absent");
+    changed = true;
+  } else {
+    console.log("  ℹ sendTypingIndicator patch: pattern not found (may already be handled)");
+  }
+} else {
+  console.log("  ✔ sendTypingIndicator: already patched");
 }
 
 if (changed) {
