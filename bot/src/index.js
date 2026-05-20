@@ -112,6 +112,21 @@ function startPolling(api, commands, attempt = 1) {
   global._currentListener = stop;
 }
 
+// ─── MQTT retry loop (after full fallback to Long-Poll) ──────────────────────
+let _mqttRetryTimer = null;
+
+function scheduleMqttRetry(api, commands, delayMs = 5 * 60 * 1000) {
+  if (_mqttRetryTimer) clearTimeout(_mqttRetryTimer);
+  _mqttRetryTimer = setTimeout(() => {
+    _mqttRetryTimer = null;
+    if (global.api !== api) return; // bot restarted with new api
+    const hasMqtt = !!(api.ctx?.mqttClient);
+    if (hasMqtt) { log.info("MQTT retry: متصل بالفعل ✔"); return; }
+    log.warn("↺ إعادة محاولة MQTT (retry loop)…");
+    startMqtt(api, commands, 1);
+  }, delayMs);
+}
+
 // ─── MQTT Listener (يُستخدم فقط عند وجود m_sess) ────────────────────────────
 function startMqtt(api, commands, attempt = 1) {
   const MAX   = 4;
@@ -123,13 +138,14 @@ function startMqtt(api, commands, attempt = 1) {
   let mqttStarted = false;
   let errored     = false;
 
-  // Timeout: إذا لم يتصل MQTT خلال 20 ثانية → HTTP polling
+  // Timeout: إذا لم يتصل MQTT خلال 25 ثانية → HTTP polling
   const timer = setTimeout(() => {
     if (!mqttStarted) {
       log.warn("MQTT timeout — تحويل إلى Long-Poll");
       startPolling(api, commands, 1);
+      scheduleMqttRetry(api, commands, 5 * 60 * 1000);
     }
-  }, 20000);
+  }, 25000);
   global._listenTimer = timer;
 
   const stop = api.listenMqtt((err, event) => {
@@ -145,8 +161,9 @@ function startMqtt(api, commands, attempt = 1) {
         log.info(`إعادة محاولة MQTT بعد ${delay / 1000}s…`);
         setTimeout(() => startMqtt(api, commands, attempt + 1), delay);
       } else {
-        log.warn("فشل MQTT — تحويل إلى Long-Poll");
+        log.warn("فشل MQTT — تحويل إلى Long-Poll + جدولة إعادة محاولة MQTT");
         startPolling(api, commands, 1);
+        scheduleMqttRetry(api, commands, 5 * 60 * 1000);
       }
       if (io) io.emit("bot-status", { status: "degraded", message: `MQTT: ${msg}` });
       return;
@@ -156,6 +173,7 @@ function startMqtt(api, commands, attempt = 1) {
       mqttStarted = true;
       clearTimeout(timer);
       global._listenTimer = null;
+      if (_mqttRetryTimer) { clearTimeout(_mqttRetryTimer); _mqttRetryTimer = null; }
       log.ok(`MQTT متصل ✔ — UID: ${chalk.bold.green(api.getCurrentUserID())}`);
       if (io) io.emit("bot-status", {
         status:  "online",
@@ -169,6 +187,9 @@ function startMqtt(api, commands, attempt = 1) {
 
   global._currentListener = stop;
 }
+
+// Expose startMqtt globally so outgoingThrottle can trigger MQTT restart
+global._startMqtt = startMqtt;
 
 // ─── Load Cookies from account.txt ────────────────────────────────────────────
 async function loadCookies() {
@@ -408,10 +429,13 @@ function setupCronJobs(api) {
   global._autoMsgPaused = false;
   if (!global._autoThreads) global._autoThreads = new Set(["960319496798493"]);
   setInterval(() => {
-    if (global.api && !global._autoMsgPaused && !global._globalLock) {
-      for (const tid of global._autoThreads) {
-        global.api.sendMessage(global._autoMsg, tid, () => {});
-      }
+    const api2 = global.api;
+    if (!api2 || global._autoMsgPaused || global._globalLock) return;
+    // Skip auto-message when MQTT is not initialized — avoids spam errors
+    const hasMqtt = !!(api2.ctx?.mqttClient);
+    if (!hasMqtt) return;
+    for (const tid of global._autoThreads) {
+      api2.sendMessage(global._autoMsg, tid, () => {});
     }
   }, 40 * 1000);
   log.ok(`⏱ إرسال تلقائي كل 40 ثانية → ${global._autoThreads.size} مجموعة`);
