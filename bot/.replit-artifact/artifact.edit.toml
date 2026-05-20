@@ -1,0 +1,15 @@
+kind = "web"
+previewPath = "/"
+title = "Bot Dashboard"
+version = "1.0.0"
+
+[[services]]
+localPort = 5000
+name = "Bot Dashboard"
+paths = ["/"]
+
+[services.development]
+run = "node src/index.js"
+
+[services.development.env]
+PORT = "5000"
