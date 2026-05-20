@@ -39,13 +39,13 @@ function extractText(msg) {
  */
 function calcTypingDelay(text) {
   const len = (text || "").length;
-  if (len === 0) return randInt(600, 1200);
+  if (len === 0) return randInt(80, 200);
 
-  // 35ms لكل حرف، حد أدنى 700ms، حد أقصى 7000ms
-  const base = Math.min(Math.max(len * 35, 700), 7000);
+  // 6ms لكل حرف، حد أدنى 120ms، حد أقصى 800ms — وضع سريع
+  const base = Math.min(Math.max(len * 6, 120), 800);
 
-  // تشويش ±25% لمحاكاة الطباعة غير المنتظمة
-  const jitter = base * (0.75 + Math.random() * 0.50);
+  // تشويش ±15%
+  const jitter = base * (0.90 + Math.random() * 0.20);
 
   return Math.round(jitter);
 }
@@ -84,8 +84,8 @@ async function simulateTyping(api, threadID, msg) {
   // انتظر المدة الواقعية
   await sleep(delay);
 
-  // وقفة صغيرة قبل الإرسال (كأن الإنسان يراجع الرسالة)
-  await sleep(randInt(150, 450));
+  // وقفة قصيرة قبل الإرسال
+  await sleep(randInt(30, 80));
 }
 
 // ─── تغليف api.sendMessage ─────────────────────────────────────────────────
