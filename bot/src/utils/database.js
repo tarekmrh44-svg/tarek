@@ -202,7 +202,7 @@ const Thread = {
     let sql = "SELECT COUNT(*) as c FROM Threads";
     const params = [];
     if (where) {
-      const clauses = Object.entries(where).map(([k, v]) => { params.push(v); return `${v === false ? 0 : v === true ? 1 : v}`; });
+      const clauses = Object.entries(where).map(([k, v]) => { params.push(v === false ? 0 : v === true ? 1 : v); return `${k} = ?`; });
       if (clauses.length) sql += " WHERE " + clauses.join(" AND ");
     }
     return Promise.resolve(d.prepare(sql).get(...params).c);

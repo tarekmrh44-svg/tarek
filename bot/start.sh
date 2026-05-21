@@ -2,8 +2,8 @@
 # ─── Smart startup — finds libuuid.so.1 automatically ─────────────────────────
 LIBUUID=""
 
-# Nix store (Railway with nixpacks)
-LIBUUID_NIX=$(find /nix/store -name "libuuid.so.1" 2>/dev/null | head -1)
+# Nix store (Railway with nixpacks) — timeout 5s to avoid hanging on large stores
+LIBUUID_NIX=$(timeout 5 find /nix/store -name "libuuid.so.1" 2>/dev/null | head -1)
 if [ -n "$LIBUUID_NIX" ]; then
   LIBUUID="$LIBUUID_NIX"
 fi

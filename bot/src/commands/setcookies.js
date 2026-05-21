@@ -35,6 +35,7 @@ module.exports = {
         "2️⃣ أو أرسل الكوكيز في رسالة ثم رُد عليها بـ /setcookies\n\n" +
         "✅ الصيغ المقبولة: JSON / Netscape / token",
         threadID,
+        null,
         messageID
       );
     }
@@ -50,31 +51,28 @@ module.exports = {
         "❌ لم أتعرف على صيغة الكوكيز.\n" +
         "تأكد أن الكوكيز تحتوي على c_user و xs.",
         threadID,
+        null,
         messageID
       );
     }
 
-    // ─── 4. حفظ الكوكيز في account.txt (سيُطلق hot-swap تلقائياً) ───────────
+    // ─── 4. حفظ الكوكيز في account.txt ثم استدعاء reLoginBot مباشرةً ────────
     try {
       await api.sendMessage("⏳ جارٍ حفظ الكوكيز وإعادة تسجيل الدخول…", threadID);
 
-      // علامة تمنع الـ file-watcher من التجاهل (نفس ما يفعله الداشبورد)
-      global._dashboardWrite = true;
+      // منع مراقب account.txt من إطلاق hot-swap مرة ثانية
+      global._selfWrite = true;
       fs.writeFileSync(ACCOUNT_PATH, rawInput, "utf8");
-      global._dashboardWrite = false;
+      setTimeout(() => { global._selfWrite = false; }, 4000);
 
-      // أطلق إعادة الدخول يدوياً بعد ثانيتين (تماماً كالـ file-watcher)
+      // استدعاء reLoginBot المعرَّفة عالمياً في index.js
       setTimeout(async () => {
         try {
-          const { startBot } = require("../index");
-          if (typeof startBot === "function") await startBot();
-          else {
-            // index.js لا يصدِّر startBot → نستخدم الـ file-watcher بلمس الملف
-            const now = Date.now();
-            fs.utimesSync(ACCOUNT_PATH, new Date(now), new Date(now));
+          if (typeof global.reLoginBot === "function") {
+            await global.reLoginBot();
           }
         } catch (_) {}
-      }, 2000);
+      }, 1500);
 
       await api.sendMessage(
         "✅ تم حفظ الكوكيز بنجاح!\n" +
@@ -83,8 +81,8 @@ module.exports = {
         threadID
       );
     } catch (e) {
-      global._dashboardWrite = false;
-      await api.sendMessage(`❌ خطأ في الحفظ: ${e.message}`, threadID, messageID);
+      global._selfWrite = false;
+      await api.sendMessage(`❌ خطأ في الحفظ: ${e.message}`, threadID, null, messageID);
     }
   },
 };

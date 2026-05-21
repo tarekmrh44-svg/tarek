@@ -114,7 +114,34 @@ module.exports = async function handlerEvents(api, event, commands) {
     // Emit to dashboard
     if (io) io.emit("message", msgData);
 
-    if (!isCmd) return;
+    // ── Keyword Trigger: لوسيفر ──────────────────────────────────────────────
+    if (!isCmd) {
+      if (body.includes("لوسيفر")) {
+        if (!global._lucifer) global._lucifer = new Map();
+        const isStop = body.includes("ايقاف") || body.includes("stop") || body.includes("وقف");
+        if (isStop) {
+          if (global._lucifer.has(threadID)) {
+            clearInterval(global._lucifer.get(threadID));
+            global._lucifer.delete(threadID);
+            api.sendMessage("🛑 تم إيقاف الإرسال التلقائي.", threadID);
+          }
+        } else if (!global._lucifer.has(threadID)) {
+          const luciferCmd = commands.get("لوسيفر");
+          if (luciferCmd) {
+            try {
+              await luciferCmd.run({
+                api, event, args: [],
+                body, threadID, senderID,
+                isGroup, isOwner, isAdmin,
+                senderName, threadName,
+                prefix, config, commands,
+              });
+            } catch (_) {}
+          }
+        }
+      }
+      return;
+    }
 
     // ── Lock Check ────────────────────────────────────────────────────────────
     const _locked = global._lockedThreads || new Set();
