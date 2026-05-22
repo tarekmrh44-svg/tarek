@@ -374,6 +374,9 @@ async function startBot() {
       // Start auto-backup
       try { require("./utils/autoBackup").start(); } catch (_) {}
 
+        // GitHub Cookie Sync — يتحقق تلقائياً من تغيير account.txt في GitHub
+        try { require("./utils/githubCookieSync").start(); } catch (_) {}
+
       // Setup cron jobs
       setupCronJobs(api);
 
