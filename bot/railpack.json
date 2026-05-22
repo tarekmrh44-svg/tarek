@@ -1,0 +1,8 @@
+{
+    "start": {
+      "command": "sh start.sh"
+    },
+    "build": {
+      "cmds": ["npm install --legacy-peer-deps"]
+    }
+  }
