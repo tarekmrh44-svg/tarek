@@ -1,7 +1,7 @@
 [deploy]
-  startCommand           = "sh start.sh"
-  healthcheckPath        = "/api/ping"
-  healthcheckTimeout     = 60
-  restartPolicyType      = "on_failure"
+  startCommand = "sh start.sh"
+  healthcheckPath = "/api/ping"
+  healthcheckTimeout = 60
+  restartPolicyType = "on_failure"
   restartPolicyMaxRetries = 5
   
