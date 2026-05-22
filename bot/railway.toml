@@ -1,8 +1,4 @@
-# Railway deployment config — Lucifer Bot
-  # builder: nixpacks (uses nixpacks.toml for setup + install)
-
-  [build]
-  builder = "nixpacks"
+# Railway config (railpack-compatible)
 
   [deploy]
   startCommand           = "sh start.sh"
