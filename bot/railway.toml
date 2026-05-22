@@ -1,6 +1,4 @@
-# Railway config (railpack-compatible)
-
-  [deploy]
+[deploy]
   startCommand           = "sh start.sh"
   healthcheckPath        = "/api/ping"
   healthcheckTimeout     = 60
