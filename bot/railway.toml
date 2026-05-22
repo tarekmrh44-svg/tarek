@@ -1,17 +1,13 @@
-# ─── Railway deployment config for Lucifer Bot ───────────────────────────────
-  # Docs: https://docs.railway.com/reference/config-as-code
+# Railway deployment config — Lucifer Bot
+  # builder: nixpacks (uses nixpacks.toml for setup + install)
 
   [build]
-  builder          = "nixpacks"
-  buildCommand     = "npm install --legacy-peer-deps"
+  builder = "nixpacks"
 
   [deploy]
-  startCommand        = "sh start.sh"
-  healthcheckPath     = "/api/ping"
-  healthcheckTimeout  = 60
-  restartPolicyType   = "on_failure"
+  startCommand           = "sh start.sh"
+  healthcheckPath        = "/api/ping"
+  healthcheckTimeout     = 60
+  restartPolicyType      = "on_failure"
   restartPolicyMaxRetries = 5
-
-  [[services]]
-  name = "bot"
   
