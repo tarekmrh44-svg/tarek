@@ -1,1624 +1,413 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-<title>jarfis — لوحة التحكم</title>
-<script src="/socket.io/socket.io.js"></script>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#07070f;--sb:#0c0c1e;--panel:#101028;--card:#13132e;
-  --border:#1e1e40;--border2:#252550;
-  --accent:#7c6cfc;--accent2:#00d4ff;--accent3:#a78bfa;
-  --green:#22c55e;--red:#ef4444;--orange:#f97316;--yellow:#eab308;
-  --blue:#3b82f6;
-  --text:#d0d0e8;--muted:#4a4a72;--muted2:#6a6a9a;
-  --sb-w:224px;--hdr:52px;--radius:12px;
-}
-html,body{height:100%;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
-a{color:inherit;text-decoration:none}
-button,input,select,textarea{font-family:inherit}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-.hidden{display:none!important}
+  <html lang="ar" dir="rtl">
+  <head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Lucifer Bot — لوحة التحكم</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#07070f;--sb:#0c0c1a;--card:#0f0f22;--border:#1a1a38;
+    --accent:#7c6cfc;--accent2:#00d4ff;--green:#22d3a0;--red:#ff4d6d;--yellow:#fbbf24;
+    --text:#e2e8f0;--muted:#64748b;--font:'Segoe UI',Tahoma,sans-serif;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px}
 
-/* LOGIN */
-#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
-.lc{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:36px 28px;width:100%;max-width:360px;text-align:center}
-.lc-ico{font-size:3rem;margin-bottom:6px}
-.lc-title{font-size:1.45rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px}
-.lc-sub{font-size:.72rem;color:var(--muted);margin-bottom:24px}
-.lc input{width:100%;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 14px;font-size:.9rem;outline:none;transition:border .2s;margin-bottom:12px;text-align:center;letter-spacing:2px}
-.lc input:focus{border-color:var(--accent)}
-.lc-btn{width:100%;padding:11px;border-radius:10px;border:none;font-size:.9rem;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:opacity .2s}
-.lc-btn:hover{opacity:.85}
-.lc-err{color:var(--red);font-size:.75rem;margin-top:8px;min-height:18px}
-.lc-copy{color:var(--muted);font-size:.64rem;margin-top:18px}
+  /* ── Login ── */
+  #login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+  .login-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;width:340px;text-align:center}
+  .login-box h2{font-size:22px;margin-bottom:6px;color:var(--accent)}
+  .login-box p{color:var(--muted);margin-bottom:24px;font-size:13px}
+  .login-box input{width:100%;padding:12px 16px;background:#0a0a1e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;margin-bottom:12px;direction:ltr}
+  .login-box input:focus{border-color:var(--accent)}
+  .login-box button{width:100%;padding:12px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:.2s}
+  .login-box button:hover{opacity:.85}
+  .login-error{color:var(--red);font-size:12px;margin-top:8px;display:none}
 
-/* LAYOUT */
-#app{display:flex;min-height:100vh}
-#sidebar{width:var(--sb-w);background:var(--sb);border-left:1px solid var(--border);display:flex;flex-direction:column;position:fixed;right:0;top:0;bottom:0;z-index:100;transition:transform .3s cubic-bezier(.4,0,.2,1)}
-#main{margin-right:var(--sb-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
-#overlay{position:fixed;inset:0;background:#000a;z-index:99;display:none}
+  /* ── App ── */
+  #app{display:none;min-height:100vh;flex-direction:column}
 
-/* MOBILE */
-#menu-btn{display:none;position:fixed;top:10px;left:10px;z-index:200;background:var(--panel);border:1px solid var(--border);border-radius:9px;width:38px;height:38px;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:var(--text)}
-@media(max-width:768px){
-  #sidebar{transform:translateX(-100%);right:auto;left:0;border-left:none;border-right:1px solid var(--border)}
-  #sidebar.open{transform:translateX(0)}
-  #overlay.show{display:block}
-  #main{margin-right:0}
-  #menu-btn{display:flex}
-  .page-header{padding:14px 14px 0}
-  .cards-grid{grid-template-columns:repeat(2,1fr)!important}
-  .stat-card{padding:14px!important}
-  .page-content{padding:14px!important}
-}
+  /* ── Topbar ── */
+  .topbar{background:var(--sb);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .topbar-left{display:flex;align-items:center;gap:12px}
+  .bot-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .bot-title{font-size:16px;font-weight:700;color:var(--text)}
+  .bot-subtitle{font-size:11px;color:var(--muted)}
+  .status-badge{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid}
+  .status-badge.online{background:#0d2e1e;color:var(--green);border-color:#1a5c3a}
+  .status-badge.offline{background:#2e0d0d;color:var(--red);border-color:#5c1a1a}
+  .status-badge.connecting{background:#2e2600;color:var(--yellow);border-color:#5c4a00}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:none}
+  .status-badge.online .status-dot{animation:pulse-green 2s infinite}
+  .status-badge.connecting .status-dot{animation:blink 1s infinite}
+  @keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(34,211,160,.4)}50%{box-shadow:0 0 0 4px rgba(34,211,160,0)}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+  .topbar-right{display:flex;align-items:center;gap:10px}
+  .btn-sm{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;transition:.2s}
+  .btn-sm:hover{color:var(--text);border-color:var(--accent)}
 
-/* SIDEBAR */
-.sb-brand{padding:16px 14px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;flex-shrink:0}
-.sb-brand .logo{font-size:1.5rem}
-.sb-brand .info .name{font-size:.95rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sb-brand .info .ver{font-size:.6rem;color:var(--muted)}
-.sb-status-box{margin:8px 10px;padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:#080816;display:flex;align-items:center;gap:8px}
-#sb-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:all .4s}
-#sb-dot.online{background:var(--green);box-shadow:0 0 8px var(--green)}
-#sb-dot.error{background:var(--orange);box-shadow:0 0 8px var(--orange)}
-#sb-dot.offline{background:var(--red)}
-#sb-dot.connecting{background:var(--yellow);animation:pulse .8s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-#sb-msg{font-size:.67rem;color:var(--text);line-height:1.35;word-break:break-all;flex:1}
-nav{flex:1;overflow-y:auto;padding:4px 0}
-.nav-section{padding:8px 12px 3px;font-size:.58rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
-.nav-item{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;font-size:.82rem;color:var(--muted2);transition:all .15s;border-right:3px solid transparent;border-left:3px solid transparent;user-select:none}
-.nav-item:hover{color:var(--text);background:#ffffff07}
-.nav-item.active{color:var(--accent2);background:#00d4ff0d;border-left-color:var(--accent2)}
-.nav-item .ni{font-size:1rem;width:18px;text-align:center;flex-shrink:0}
-.sb-footer{padding:10px 12px;border-top:1px solid var(--border);flex-shrink:0}
-.sb-footer .uid-row{font-size:.63rem;color:var(--muted);margin-bottom:5px;word-break:break-all}
-.sb-footer .uid-row span{color:var(--accent2)}
-.logout-btn{width:100%;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:.72rem;cursor:pointer;transition:all .2s}
-.logout-btn:hover{background:var(--red);color:#fff;border-color:var(--red)}
+  /* ── Grid ── */
+  .main-grid{display:grid;grid-template-columns:300px 1fr;grid-template-rows:auto 1fr;gap:16px;padding:16px;height:calc(100vh - 56px)}
 
-/* HEADER */
-.page-header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.page-title{font-size:1.15rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px}
-.page-desc{font-size:.72rem;color:var(--muted2);margin-top:2px}
-.page-content{padding:16px 20px 30px;flex:1}
+  /* ── Cards ── */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .card-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--muted)}
+  .card-header .icon{font-size:16px}
 
-/* CARDS */
-.cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .2s}
-.stat-card:hover{border-color:var(--border2)}
-.stat-card .ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.stat-card .data .val{font-size:1.4rem;font-weight:800;color:#fff;line-height:1}
-.stat-card .data .lbl{font-size:.65rem;color:var(--muted2);margin-top:3px}
+  /* ── Stats Panel (left) ── */
+  .stats-panel{grid-row:1/3;display:flex;flex-direction:column;gap:12px}
 
-/* PANELS */
-.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px}
-.panel-title{font-size:.82rem;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:7px}
-.panel-title .pt-icon{font-size:1rem}
+  /* ── Big Status Card ── */
+  .big-status{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+  .big-status-icon{font-size:48px;margin-bottom:12px;display:block}
+  .big-status-label{font-size:13px;color:var(--muted);margin-bottom:4px}
+  .big-status-uid{font-size:12px;color:var(--accent2);word-break:break-all;margin-top:4px;direction:ltr}
 
-/* COOKIE */
-.cookie-tabs{display:flex;gap:4px;margin-bottom:14px;background:#080816;padding:4px;border-radius:10px;border:1px solid var(--border)}
-.cookie-tab{flex:1;padding:7px 4px;border-radius:8px;border:none;background:transparent;color:var(--muted2);font-size:.72rem;cursor:pointer;transition:all .2s;font-weight:600}
-.cookie-tab.active{background:var(--accent);color:#fff}
-.cookie-pane{display:none}
-.cookie-pane.active{display:block}
-.cookie-hint{font-size:.68rem;color:var(--muted);background:#08081a;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.65}
-.cookie-hint code{background:#1a1a40;padding:1px 4px;border-radius:4px;font-size:.64rem;color:var(--accent2)}
-textarea.ck-input{width:100%;min-height:130px;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.77rem;resize:vertical;outline:none;transition:border .2s;font-family:'Courier New',monospace;line-height:1.5}
-textarea.ck-input:focus{border-color:var(--accent)}
-input.ck-input{width:100%;background:#080816;border:1px solid var(--border);border-radius:10px;color:var(--text);padding:11px 12px;font-size:.82rem;outline:none;transition:border .2s}
-input.ck-input:focus{border-color:var(--accent)}
-.ck-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.ck-status{margin-top:10px;padding:9px 12px;border-radius:9px;font-size:.75rem;display:none;align-items:flex-start;gap:8px;line-height:1.5}
-.ck-status.show{display:flex}
-.ck-status.ok{background:#052310;border:1px solid #22c55e40;color:var(--green)}
-.ck-status.warn{background:#1a1000;border:1px solid #f9731640;color:var(--orange)}
-.ck-status.err{background:#1a0505;border:1px solid #ef444440;color:var(--red)}
-.ck-status.info{background:#050a1a;border:1px solid #00d4ff40;color:var(--accent2)}
+  /* ── Stat Items ── */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px}
+  .stat-item{background:var(--sb);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+  .stat-value{font-size:20px;font-weight:700;color:var(--accent)}
+  .stat-label{font-size:11px;color:var(--muted);margin-top:2px}
 
-/* BUTTONS */
-.btn{padding:9px 16px;border-radius:9px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.btn-primary:hover{opacity:.85}
-.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.btn-danger{background:var(--red);color:#fff}
-.btn-danger:hover{opacity:.85}
-.btn-success{background:var(--green);color:#fff}
-.btn-success:hover{opacity:.85}
-.btn-warning{background:var(--orange);color:#fff}
-.btn-sm{padding:6px 11px;font-size:.73rem;border-radius:7px}
-.btn:disabled{opacity:.45;cursor:not-allowed}
+  /* ── Cookies Upload ── */
+  .cookies-section{padding:12px}
+  .cookies-section textarea{width:100%;height:80px;background:#0a0a1e;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;padding:8px;resize:vertical;direction:ltr;font-family:monospace}
+  .cookies-section textarea:focus{border-color:var(--accent);outline:none}
+  .btn-primary{width:100%;padding:9px;background:var(--accent);border:none;border-radius:7px;color:#fff;font-weight:600;cursor:pointer;font-size:13px;margin-top:6px;transition:.2s}
+  .btn-primary:hover{opacity:.85}
+  .btn-danger{background:#991b1b!important}
 
-/* PROTECTION */
-.prot-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:520px){.prot-grid{grid-template-columns:1fr}}
-.prot-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px}
-.prot-card .pc-ico{font-size:1.2rem;flex-shrink:0}
-.prot-card .pc-info{flex:1}
-.prot-card .pc-name{font-size:.8rem;font-weight:700;color:#fff}
-.prot-card .pc-desc{font-size:.64rem;color:var(--muted);margin-top:2px}
-.toggle-sw{position:relative;width:38px;height:21px;flex-shrink:0}
-.toggle-sw input{display:none}
-.toggle-sw .track{position:absolute;inset:0;background:var(--muted);border-radius:21px;transition:background .25s;cursor:pointer}
-.toggle-sw input:checked+.track{background:var(--green)}
-.toggle-sw .thumb{position:absolute;top:3px;right:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:transform .25s;pointer-events:none}
-.toggle-sw input:checked+.track+.thumb,.toggle-sw input:checked~.thumb{transform:translateX(-17px)}
+  /* ── Right side ── */
+  .right-panel{display:flex;flex-direction:column;gap:12px}
 
-/* COMMANDS */
-.cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
-.cmd-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px;display:flex;align-items:center;gap:9px;transition:border-color .2s;cursor:pointer}
-.cmd-card:hover{border-color:var(--accent2)}
-.cmd-card .cc-ico{width:32px;height:32px;border-radius:8px;background:#1a1a40;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
-.cmd-card .cc-name{font-size:.82rem;font-weight:700;color:#fff}
-.cmd-card .cc-desc{font-size:.64rem;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge{display:inline-flex;padding:1px 6px;border-radius:5px;font-size:.6rem;font-weight:700;margin-top:3px}
-.badge-admin{background:#f9731620;color:var(--orange)}
-.badge-owner{background:#ef444420;color:var(--red)}
+  /* ── Last Message ── */
+  .last-msg-card{flex-shrink:0}
+  .last-msg-body{padding:14px 16px}
+  .last-msg-empty{color:var(--muted);font-size:13px;text-align:center;padding:12px 0}
+  .msg-bubble{background:var(--sb);border-radius:10px;padding:12px;border-right:3px solid var(--accent)}
+  .msg-meta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:11px;color:var(--muted)}
+  .msg-sender{color:var(--accent2);font-weight:600}
+  .msg-text{color:var(--text);font-size:13px;word-break:break-word;line-height:1.5}
+  .msg-thread{font-size:11px;color:var(--muted);margin-top:4px}
 
-/* MODAL */
-.modal{position:fixed;inset:0;background:#000b;z-index:500;display:none;align-items:center;justify-content:center;padding:16px}
-.modal.open{display:flex}
-.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:16px;width:100%;max-width:760px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
-.modal-hdr{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.modal-hdr h3{font-size:.95rem;font-weight:800;color:#fff}
-.modal-close{background:transparent;border:none;color:var(--muted2);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:6px}
-.modal-close:hover{background:var(--border);color:#fff}
-.modal-body{padding:18px;flex:1}
-.modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+  /* ── Logs ── */
+  .logs-card{flex:1;display:flex;flex-direction:column;min-height:0}
+  .logs-body{flex:1;overflow-y:auto;padding:10px;font-family:monospace;font-size:12px;direction:ltr}
+  .logs-body::-webkit-scrollbar{width:4px}
+  .logs-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  .log-line{padding:2px 0;border-bottom:1px solid #0d0d20;word-break:break-all;line-height:1.5}
+  .log-line.log{color:#94a3b8}
+  .log-line.warn{color:var(--yellow)}
+  .log-line.error{color:var(--red)}
+  .log-line.info{color:var(--accent2)}
+  .log-ts{color:#334155;margin-left:8px}
+  .logs-controls{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center}
+  .logs-controls label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;cursor:pointer}
+  .clear-btn{margin-right:auto;padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:11px;cursor:pointer}
+  .clear-btn:hover{color:var(--red);border-color:var(--red)}
 
-/* CODE EDITOR */
-.code-editor{width:100%;min-height:320px;background:#080816;border:1px solid var(--border);border-radius:10px;color:#e8e8ff;padding:12px;font-size:.78rem;resize:vertical;outline:none;transition:border .2s;font-family:'Courier New',monospace;line-height:1.6;tab-size:2}
-.code-editor:focus{border-color:var(--accent)}
+  /* ── Toast ── */
+  #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e1e40;border:1px solid var(--accent);color:var(--text);padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
+  #toast.show{opacity:1}
 
-/* FORM */
-.form-row{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
-.form-row label{font-size:.72rem;color:var(--muted2);font-weight:600}
-.form-row input,.form-row select,.form-row textarea{background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%}
-.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:var(--accent)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:480px){.form-grid{grid-template-columns:1fr}}
+  @media(max-width:768px){
+    .main-grid{grid-template-columns:1fr;grid-template-rows:auto auto auto}
+    .stats-panel{grid-row:auto}
+  }
+  </style>
+  </head>
+  <body>
 
-/* LOG */
-#msg-log{max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
-.log-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.72rem;line-height:1.5}
-.log-item .li-meta{color:var(--muted);margin-bottom:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.log-item .li-body{color:var(--text);word-break:break-word}
-.li-thread{color:var(--accent2);font-size:.67rem}
-.li-name{color:var(--accent3);font-weight:600}
-.li-group{background:#7c6cfc20;color:var(--accent3);padding:1px 5px;border-radius:4px;font-size:.6rem}
-.li-cmd{background:#22c55e20;color:var(--green);padding:1px 5px;border-radius:4px;font-size:.6rem}
-
-/* MEDIA GRID */
-.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-.media-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .2s;position:relative}
-.media-card:hover{border-color:var(--accent2)}
-.media-card .mc-thumb{height:90px;display:flex;align-items:center;justify-content:center;background:#080816;overflow:hidden}
-.media-card .mc-thumb img{width:100%;height:100%;object-fit:cover}
-.media-card .mc-thumb .mc-ico{font-size:2rem}
-.media-card .mc-info{padding:7px 8px;font-size:.65rem}
-.media-card .mc-name{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
-.media-card .mc-size{color:var(--muted)}
-.media-card .mc-del{position:absolute;top:4px;left:4px;background:#ef4444cc;border:none;border-radius:5px;color:#fff;padding:2px 6px;font-size:.65rem;cursor:pointer;display:none}
-.media-card:hover .mc-del{display:block}
-.media-url-badge{background:#1a1a40;border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:.63rem;color:var(--accent2);font-family:monospace;cursor:pointer;word-break:break-all;display:inline-block;margin-top:4px}
-.media-url-badge:hover{background:var(--accent);color:#fff}
-
-/* UPLOAD DROP ZONE */
-.drop-zone{border:2px dashed var(--border2);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;color:var(--muted2)}
-.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);color:var(--accent);background:#7c6cfc08}
-.drop-zone .dz-ico{font-size:2.5rem;margin-bottom:8px}
-.drop-zone .dz-txt{font-size:.8rem;font-weight:600}
-.drop-zone .dz-sub{font-size:.68rem;color:var(--muted);margin-top:4px}
-
-/* SEND */
-.send-form{display:flex;flex-direction:column;gap:10px}
-.send-form input,.send-form textarea{background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:10px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%}
-.send-form input:focus,.send-form textarea:focus{border-color:var(--accent)}
-.send-form textarea{min-height:80px;resize:vertical}
-
-/* ADMIN TABLE */
-.admin-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
-.admin-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 12px;gap:10px}
-.admin-uid{font-family:monospace;font-size:.78rem;color:var(--accent2);flex:1;word-break:break-all}
-.admin-badge{font-size:.63rem;padding:2px 7px;border-radius:5px;background:#22c55e20;color:var(--green)}
-.admin-badge.owner{background:#f9731620;color:var(--orange)}
-
-/* TOAST */
-#toast-wrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:380px}
-.toast{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:.8rem;animation:toastIn .3s ease;box-shadow:0 8px 32px #0008;text-align:center}
-.toast.ok{border-color:#22c55e60;color:var(--green)}
-.toast.err{border-color:#ef444460;color:var(--red)}
-.toast.info{border-color:#00d4ff60;color:var(--accent2)}
-.toast.warn{border-color:#f9731660;color:var(--orange)}
-@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-
-.spin{display:inline-block;width:14px;height:14px;border:2px solid #ffffff40;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
-.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:6px;font-size:.65rem;font-weight:700;gap:4px}
-.tag-green{background:#22c55e20;color:var(--green)}
-.tag-red{background:#ef444420;color:var(--red)}
-.tag-blue{background:#3b82f620;color:var(--blue)}
-
-/* ═══════ LIVE CONTROL PAGE ═══════ */
-.live-layout{display:grid;grid-template-columns:250px 1fr 230px;gap:10px;height:calc(100vh - 148px);padding:8px 20px 16px}
-.live-panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;min-height:0}
-.live-panel-hdr{padding:9px 12px;font-size:.72rem;font-weight:800;color:var(--accent2);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:6px;letter-spacing:.04em}
-.live-search{width:100%;background:#060614;border:none;border-bottom:1px solid var(--border);color:var(--text);padding:8px 12px;font-size:.77rem;outline:none;flex-shrink:0}
-.live-search:focus{border-bottom-color:var(--accent)}
-.live-grp-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid #ffffff05;font-size:.75rem;transition:background .12s;display:flex;flex-direction:column;gap:2px;border-right:3px solid transparent}
-.live-grp-item:hover{background:#ffffff07}
-.live-grp-item.sel{background:#00d4ff08;border-right-color:var(--accent2)}
-.live-grp-name{color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.live-grp-id{color:var(--muted);font-size:.59rem;font-family:monospace}
-.live-grp-last{color:var(--muted2);font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.live-msg-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:.73rem;flex-shrink:0}
-.live-msg-item.self{border-color:var(--accent);background:#7c6cfc10}
-.live-msg-name{font-weight:700;font-size:.66rem;margin-bottom:2px}
-.live-msg-body{color:var(--text);word-break:break-word;line-height:1.45}
-.live-msg-time{color:var(--muted);font-size:.58rem;margin-top:3px}
-.live-send-bar{display:flex;gap:6px;padding:8px;border-top:1px solid var(--border);flex-shrink:0}
-.live-send-ipt{flex:1;background:#080816;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 10px;font-size:.77rem;outline:none}
-.live-send-ipt:focus{border-color:var(--accent)}
-.live-cmd-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:7px 5px;font-size:.68rem;color:var(--text);cursor:pointer;text-align:center;transition:all .15s;display:flex;flex-direction:column;gap:2px;align-items:center;word-break:break-all}
-.live-cmd-btn:hover{border-color:var(--accent2);color:var(--accent2);background:#00d4ff08;transform:scale(1.03)}
-.live-cmd-btn:active{transform:scale(.97)}
-.live-cmd-btn.lc-owner{border-color:#f9731640;color:var(--orange)}
-.live-cmd-btn.lc-member{border-color:#22c55e40;color:var(--green)}
-.live-cmd-role-lbl{font-size:.54rem;padding:1px 4px;border-radius:3px}
-.live-cmd-role-lbl.r-admin{background:#7c6cfc18;color:var(--accent3)}
-.live-cmd-role-lbl.r-member{background:#22c55e18;color:var(--green)}
-.live-cmd-role-lbl.r-owner{background:#f9731618;color:var(--orange)}
-.live-mob-tabs{display:none;flex-shrink:0;border-bottom:1px solid var(--border);margin:0 20px}
-.live-mob-tab{flex:1;padding:9px;border:none;background:transparent;color:var(--muted2);font-size:.75rem;cursor:pointer;font-weight:700;border-bottom:3px solid transparent;transition:all .15s}
-.live-mob-tab.act{color:var(--accent2);border-bottom-color:var(--accent2)}
-.live-empty{text-align:center;color:var(--muted);font-size:.76rem;margin:auto;padding:20px}
-@media(max-width:900px){
-  .live-layout{grid-template-columns:1fr;height:auto;padding:8px 14px 16px;gap:8px}
-  .live-mob-tabs{display:flex}
-  .live-layout .live-panel{height:380px}
-  .live-layout[data-tab="groups"] #lp-chat,.live-layout[data-tab="groups"] #lp-cmds{display:none}
-  .live-layout[data-tab="chat"] #lp-groups,.live-layout[data-tab="chat"] #lp-cmds{display:none}
-  .live-layout[data-tab="cmds"] #lp-groups,.live-layout[data-tab="cmds"] #lp-chat{display:none}
-}
-@media(max-width:600px){.live-layout .live-panel{height:320px}.live-layout{padding:6px 10px 12px}}
-</style>
-</head>
-<body>
-
-<button id="menu-btn" onclick="toggleSidebar()">☰</button>
-<div id="overlay" onclick="closeSidebar()"></div>
-
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="lc">
-    <div class="lc-ico">🤖</div>
-    <div class="lc-title">jarfis Bot</div>
-    <div class="lc-sub">لوحة التحكم المتكاملة — v3.1</div>
-    <input type="password" id="login-pw" placeholder="كلمة المرور" autocomplete="current-password"/>
-    <button class="lc-btn" onclick="doLogin()">دخول</button>
-    <div class="lc-err" id="login-err"></div>
-    <div class="lc-copy">© 2026 djamel · Jarfis Bot v3.1</div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app" class="hidden">
-
-<!-- SIDEBAR -->
-<div id="sidebar">
-  <div class="sb-brand">
-    <div class="logo">🤖</div>
-    <div class="info">
-      <div class="name">jarfis Bot</div>
-      <div class="ver">v3.1 · White Engine</div>
+  <!-- Login -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div style="font-size:40px;margin-bottom:12px">🤖</div>
+      <h2>Lucifer Bot</h2>
+      <p>أدخل كلمة المرور للدخول</p>
+      <input type="password" id="pass-input" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button onclick="doLogin()">دخول</button>
+      <div class="login-error" id="login-err">كلمة المرور غير صحيحة</div>
     </div>
   </div>
-  <div class="sb-status-box">
-    <div id="sb-dot"></div>
-    <div id="sb-msg">جارٍ الاتصال…</div>
-  </div>
-  <nav>
-    <div class="nav-section">الرئيسية</div>
-    <div class="nav-item active" data-page="dashboard" onclick="goto('dashboard')"><span class="ni">📊</span> لوحة التحكم</div>
-    <div class="nav-item" data-page="cookies" onclick="goto('cookies')"><span class="ni">🍪</span> الكوكيز</div>
-    <div class="nav-item" data-page="protection" onclick="goto('protection')"><span class="ni">🛡️</span> الحماية</div>
-    <div class="nav-section">الإدارة</div>
-    <div class="nav-item" data-page="commands" onclick="goto('commands')"><span class="ni">⚙️</span> الأوامر</div>
-    <div class="nav-item" data-page="media" onclick="goto('media')"><span class="ni">🖼️</span> الوسائط</div>
-    <div class="nav-item" data-page="send" onclick="goto('send')"><span class="ni">💬</span> إرسال رسالة</div>
-    <div class="nav-item" data-page="log" onclick="goto('log')"><span class="ni">📝</span> سجل الرسائل</div>
-    <div class="nav-item" data-page="logs" onclick="goto('logs')"><span class="ni">📋</span> سجل النظام</div>
-    <div class="nav-section">الإدارة المباشرة</div>
-    <div class="nav-item" data-page="live" onclick="goto('live');loadLivePage()"><span class="ni">📡</span> تفعيل مباشر</div>
-    <div class="nav-section">الإعدادات</div>
-    <div class="nav-item" data-page="admins" onclick="goto('admins')"><span class="ni">👑</span> الأدمنز</div>
-    <div class="nav-item" data-page="config" onclick="goto('config')"><span class="ni">🔧</span> الإعدادات</div>
-  </nav>
-  <div class="sb-footer">
-    <div class="uid-row">UID: <span id="sb-uid">—</span></div>
-    <div class="uid-row">RAM: <span id="sb-ram">—</span> MB · Node <span id="sb-node">—</span></div>
-    <button class="logout-btn" onclick="doLogout()">تسجيل الخروج</button>
-  </div>
-</div>
 
-<!-- MAIN -->
-<div id="main">
-
-<!-- ══ DASHBOARD ══ -->
-<div id="page-dashboard" class="page">
-  <div class="page-header">
-    <div><div class="page-title"><span>📊</span> لوحة التحكم</div><div class="page-desc">حالة البوت الفورية</div></div>
-    <button class="btn btn-outline btn-sm" onclick="loadStats()">🔄 تحديث</button>
-  </div>
-  <div class="page-content">
-    <div class="cards-grid">
-      <div class="stat-card"><div class="ico" style="background:#7c6cfc20;color:var(--accent)">👥</div><div class="data"><div class="val" id="st-users">—</div><div class="lbl">مستخدم</div></div></div>
-      <div class="stat-card"><div class="ico" style="background:#00d4ff20;color:var(--accent2)">💬</div><div class="data"><div class="val" id="st-threads">—</div><div class="lbl">محادثة</div></div></div>
-      <div class="stat-card"><div class="ico" style="background:#22c55e20;color:var(--green)">⚡</div><div class="data"><div class="val" id="st-cmds">—</div><div class="lbl">أمر مُنفَّذ</div></div></div>
-      <div class="stat-card"><div class="ico" style="background:#f9731620;color:var(--orange)">🕐</div><div class="data"><div class="val" id="st-uptime">—</div><div class="lbl">وقت التشغيل</div></div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div class="panel">
-        <div class="panel-title"><span class="pt-icon">🤖</span> معلومات البوت</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الاسم</span><span id="inf-name" style="color:#fff;font-weight:700">—</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">البادئة</span><span id="inf-prefix" style="color:var(--accent2);font-family:monospace;font-size:1rem">—</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الأوامر</span><span id="inf-cmdcount" style="color:#fff;font-weight:700">—</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الأدمنز</span><span id="inf-admins" style="color:#fff">—</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">الذاكرة</span><span id="inf-ram" style="color:var(--yellow)">—</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.78rem"><span style="color:var(--muted2)">Node.js</span><span id="inf-node" style="color:var(--muted2)">—</span></div>
+  <!-- App -->
+  <div id="app">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="bot-logo">🤖</div>
+        <div>
+          <div class="bot-title" id="bot-name">Lucifer Bot</div>
+          <div class="bot-subtitle" id="bot-prefix">البادئة: /</div>
         </div>
       </div>
-      <div class="panel">
-        <div class="panel-title"><span class="pt-icon">🛡️</span> تبديل سريع</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div class="prot-card"><span class="pc-ico">⌨️</span><div class="pc-info"><div class="pc-name">محاكاة الكتابة</div><div class="pc-desc">Human Typing</div></div><label class="toggle-sw"><input type="checkbox" id="qt-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-          <div class="prot-card"><span class="pc-ico">🕵️</span><div class="pc-info"><div class="pc-name">التخفي</div><div class="pc-desc">Stealth Engine</div></div><label class="toggle-sw"><input type="checkbox" id="qt-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-          <div class="prot-card"><span class="pc-ico">💓</span><div class="pc-info"><div class="pc-name">Keep-Alive</div><div class="pc-desc">نبضة دورية</div></div><label class="toggle-sw"><input type="checkbox" id="qt-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-        </div>
+      <div id="status-badge" class="status-badge offline">
+        <div class="status-dot"></div>
+        <span id="status-text">غير متصل</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-sm" onclick="doLogout()">خروج</button>
       </div>
     </div>
-    <style>@media(max-width:600px){#page-dashboard .page-content>div:nth-child(2){grid-template-columns:1fr!important}}</style>
-  </div>
-</div>
 
-<!-- ══ COOKIES ══ -->
-<div id="page-cookies" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>🍪</span> إدارة الكوكيز</div><div class="page-desc">رفع الكوكيز — تغيير الحساب فوراً بدون إعادة تشغيل</div></div>
-  </div>
-  <div class="page-content">
-    <!-- Status -->
-    <div class="panel">
-      <div class="panel-title"><span class="pt-icon">📋</span> الحساب الحالي</div>
-      <div id="ck-current"><div style="font-size:.78rem;color:var(--muted)">جارٍ التحميل…</div></div>
-    </div>
+    <!-- Grid -->
+    <div class="main-grid">
 
-    <!-- Input -->
-    <div class="panel">
-      <div class="panel-title"><span class="pt-icon">⬆️</span> رفع كوكيز جديدة</div>
-      <div style="background:#0a1a0a;border:1px solid #22c55e30;border-radius:9px;padding:10px 12px;margin-bottom:14px;font-size:.74rem;color:#22c55e;line-height:1.7">
-        ✅ <strong>لا يحتاج m_sess</strong> — ارفع كوكيز facebook.com العادية وسيعمل البوت بـ HTTP Long-Poll تلقائياً.<br>
-        🔄 <strong>تغيير فوري:</strong> بعد الحفظ سيتم تغيير حساب البوت تلقائياً دون إعادة تشغيل.
-      </div>
+      <!-- LEFT: Stats Panel -->
+      <div class="stats-panel">
 
-      <div class="cookie-tabs">
-        <button class="cookie-tab active" onclick="setCkTab('json',this)">📋 JSON</button>
-        <button class="cookie-tab" onclick="setCkTab('string',this)">🔤 نص</button>
-        <button class="cookie-tab" onclick="setCkTab('token',this)">🔑 توكن</button>
-        <button class="cookie-tab" onclick="setCkTab('netscape',this)">🦊 Netscape</button>
-      </div>
-
-      <div class="cookie-pane active" id="ck-pane-json">
-        <div class="cookie-hint">
-          <strong>📋 JSON Array</strong> — مصفوفة من الكوكيز (c3c / Cookie-Editor / EditThisCookie)<br>
-          <code>[{"key":"c_user","value":"123..."},{"key":"xs","value":"abc..."},{"key":"datr","value":"xxx"}]</code><br>
-          أو: <code>[{"name":"c_user","value":"..."}]</code> — يدعم name و key
+        <!-- Big Status -->
+        <div class="big-status card" id="big-status-card">
+          <span class="big-status-icon" id="big-icon">⚫</span>
+          <div class="big-status-label" id="big-label">غير متصل</div>
+          <div class="big-status-uid" id="big-uid">—</div>
         </div>
-        <textarea class="ck-input" id="ck-json-input" placeholder='[{"key":"c_user","value":"..."},{"key":"xs","value":"..."},{"key":"datr","value":"..."}]'></textarea>
-        <div class="ck-actions">
-          <button class="btn btn-primary" onclick="submitCookies('json')"><span class="spin hidden" id="sp-json"></span>💾 حفظ وتطبيق</button>
-          <button class="btn btn-outline" onclick="validateOnly('json')">🔍 تحقق فقط</button>
-          <button class="btn btn-outline" onclick="clearInput('ck-json-input')">🗑️ مسح</button>
-        </div>
-      </div>
 
-      <div class="cookie-pane" id="ck-pane-string">
-        <div class="cookie-hint">
-          <strong>🔤 نص الكوكيز</strong> — انسخ مباشرة من المتصفح (DevTools → Network → Request Headers → Cookie)<br>
-          <code>c_user=123456; xs=abc:def; datr=xxxx; sb=yyyy; fr=zzzz</code>
-        </div>
-        <textarea class="ck-input" id="ck-str-input" placeholder="c_user=123456789; xs=abc:def:ghi; datr=xxxxx; sb=yyyy; fr=zzzz"></textarea>
-        <div class="ck-actions">
-          <button class="btn btn-primary" onclick="submitCookies('string')"><span class="spin hidden" id="sp-str"></span>💾 حفظ وتطبيق</button>
-          <button class="btn btn-outline" onclick="validateOnly('string')">🔍 تحقق فقط</button>
-          <button class="btn btn-outline" onclick="clearInput('ck-str-input')">🗑️ مسح</button>
-        </div>
-      </div>
-
-      <div class="cookie-pane" id="ck-pane-token">
-        <div class="cookie-hint">
-          <strong>🔑 توكن Facebook</strong> — الصق توكن EAAAA...<br>
-          سيتم تحويل التوكن تلقائياً إلى كوكيز وتسجيل الدخول<br>
-          <code>EAAAA6z8X4Ba...</code>
-        </div>
-        <input class="ck-input" id="ck-tok-input" type="text" placeholder="EAAAA6z8X4Ba..."/>
-        <div class="ck-actions">
-          <button class="btn btn-primary" onclick="submitCookies('token')"><span class="spin hidden" id="sp-tok"></span>🔄 تحويل وتطبيق</button>
-          <button class="btn btn-outline" onclick="clearInput('ck-tok-input')">🗑️ مسح</button>
-        </div>
-      </div>
-
-      <div class="cookie-pane" id="ck-pane-netscape">
-        <div class="cookie-hint">
-          <strong>🦊 Netscape Format</strong> — صيغة كوكيز المتصفح القديمة<br>
-          <code># Netscape HTTP Cookie File<br>facebook.com TRUE / FALSE 0 c_user 123456</code>
-        </div>
-        <textarea class="ck-input" id="ck-ns-input" placeholder="# Netscape HTTP Cookie File&#10;facebook.com&#9;TRUE&#9;/&#9;FALSE&#9;0&#9;c_user&#9;123456&#10;facebook.com&#9;TRUE&#9;/&#9;FALSE&#9;0&#9;xs&#9;abc:def"></textarea>
-        <div class="ck-actions">
-          <button class="btn btn-primary" onclick="submitCookies('netscape')"><span class="spin hidden" id="sp-ns"></span>💾 حفظ وتطبيق</button>
-          <button class="btn btn-outline" onclick="clearInput('ck-ns-input')">🗑️ مسح</button>
-        </div>
-      </div>
-
-      <div class="ck-status" id="ck-status"></div>
-    </div>
-
-    <!-- Danger -->
-    <div class="panel" style="border-color:#ef444430">
-      <div class="panel-title"><span class="pt-icon">⚠️</span> منطقة الخطر</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-        <div style="font-size:.76rem;color:var(--muted)">حذف الكوكيز نهائياً — سيقطع البوت ويوقفه</div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-warning btn-sm" onclick="triggerRelogin()">🔄 إعادة تسجيل الدخول</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteCookies()">🗑️ حذف الكوكيز</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ PROTECTION ══ -->
-<div id="page-protection" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>🛡️</span> الحماية</div><div class="page-desc">WHITE Engine v2 — 16 نظام حماية لمحاكاة الإنسان</div></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-outline btn-sm" onclick="enableAllProt()">✅ تفعيل الكل</button>
-      <button class="btn btn-outline btn-sm" onclick="loadProtection()">🔄 تحديث</button>
-    </div>
-  </div>
-  <div class="page-content">
-
-    <!-- قسم الأنظمة الأصلية -->
-    <div class="panel-title" style="margin-bottom:8px;font-size:.75rem;color:var(--muted2);letter-spacing:.08em;text-transform:uppercase">⚙️ أنظمة الاتصال والشبكة</div>
-    <div class="prot-grid" style="margin-bottom:14px">
-      <div class="prot-card"><span class="pc-ico">⌨️</span><div class="pc-info"><div class="pc-name">محاكاة الكتابة البشرية</div><div class="pc-desc">تأخير واقعي قبل كل رد — يمنع الكشف كبوت</div></div><label class="toggle-sw"><input type="checkbox" id="p-typing" onchange="toggleProt('humanTyping',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card"><span class="pc-ico">🕵️</span><div class="pc-info"><div class="pc-name">محرك التخفي</div><div class="pc-desc">تصفح صفحات وتدوير User-Agent ونوم ليلي</div></div><label class="toggle-sw"><input type="checkbox" id="p-stealth" onchange="toggleProt('stealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card"><span class="pc-ico">📡</span><div class="pc-info"><div class="pc-name">MQTT Health Check</div><div class="pc-desc">إعادة اتصال تلقائي عند الانقطاع</div></div><label class="toggle-sw"><input type="checkbox" id="p-mqtt" onchange="toggleProt('mqttHealth',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card"><span class="pc-ico">💓</span><div class="pc-info"><div class="pc-name">Keep-Alive</div><div class="pc-desc">نبضة كل 8-18 دقيقة</div></div><label class="toggle-sw"><input type="checkbox" id="p-keepalive" onchange="toggleProt('keepAlive',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card"><span class="pc-ico">🐢</span><div class="pc-info"><div class="pc-name">تقليل سرعة الإرسال</div><div class="pc-desc">Outgoing Throttle — يحمي من الحظر</div></div><label class="toggle-sw"><input type="checkbox" id="p-throttle" onchange="toggleProt('throttle',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-    </div>
-
-    <!-- قسم أنظمة المحاكاة الجديدة -->
-    <div class="panel-title" style="margin-bottom:8px;font-size:.75rem;color:var(--accent2);letter-spacing:.08em;text-transform:uppercase">🧠 أنظمة محاكاة السلوك البشري — جديد</div>
-    <div class="prot-grid" style="margin-bottom:14px">
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">👁️</span><div class="pc-info"><div class="pc-name">تأخير القراءة البشري</div><div class="pc-desc">يحسب وقت قراءة الرسالة حسب طولها قبل الرد</div></div><label class="toggle-sw"><input type="checkbox" id="p-readrcpt" onchange="toggleProt('humanReadReceipt',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🌅</span><div class="pc-info"><div class="pc-name">نمط الحضور الطبيعي</div><div class="pc-desc">أوقات ذروة صباح/مساء — نوم ليلي تلقائي</div></div><label class="toggle-sw"><input type="checkbox" id="p-natpres" onchange="toggleProt('naturalPresence',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">📱</span><div class="pc-info"><div class="pc-name">محاكي التمرير</div><div class="pc-desc">يتصفح ماسنجر وصفحات FB بشكل طبيعي</div></div><label class="toggle-sw"><input type="checkbox" id="p-scroll" onchange="toggleProt('scrollSimulator',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🕶️</span><div class="pc-info"><div class="pc-name">مكافحة الكشف</div><div class="pc-desc">تدوير بصمة الجهاز والـ headers تلقائياً</div></div><label class="toggle-sw"><input type="checkbox" id="p-antidet" onchange="toggleProt('antiDetection',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🔄</span><div class="pc-info"><div class="pc-name">تجديد الجلسة</div><div class="pc-desc">يلمس نقاط FB Auth دورياً لإبقاء الكوكيز حيّة</div></div><label class="toggle-sw"><input type="checkbox" id="p-sessref" onchange="toggleProt('sessionRefresher',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">😊</span><div class="pc-info"><div class="pc-name">تأخير الردود الانفعالية</div><div class="pc-desc">تأخير بشري قبل أي Reaction حسب نوعه</div></div><label class="toggle-sw"><input type="checkbox" id="p-reactdly" onchange="toggleProt('reactionDelay',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">📶</span><div class="pc-info"><div class="pc-name">تذبذب الاتصال</div><div class="pc-desc">يُحاكي تفاوت الشبكة الخلوية (3G/4G/5G)</div></div><label class="toggle-sw"><input type="checkbox" id="p-jitter" onchange="toggleProt('connectionJitter',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🛑</span><div class="pc-info"><div class="pc-name">منع الرسائل المكررة</div><div class="pc-desc">يرصد التكرار ويحجبه في نافذة 8 ثوانٍ</div></div><label class="toggle-sw"><input type="checkbox" id="p-dedup" onchange="toggleProt('duplicateGuard',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🎭</span><div class="pc-info"><div class="pc-name">تنويع نمط الكتابة</div><div class="pc-desc">أنماط مزاج مختلفة — توقفات تفكير عشوائية</div></div><label class="toggle-sw"><input type="checkbox" id="p-typvar" onchange="toggleProt('typingVariator',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-      <div class="prot-card" style="border-color:#7c6cfc40"><span class="pc-ico">🗓️</span><div class="pc-info"><div class="pc-name">جدولة السلوك</div><div class="pc-desc">تأخير ذكي للردود + حالة "مشغول" عشوائية</div></div><label class="toggle-sw"><input type="checkbox" id="p-behsched" onchange="toggleProt('behaviorScheduler',this.checked)"><div class="track"></div><div class="thumb"></div></label></div>
-    </div>
-
-    <div class="panel" style="margin-top:4px">
-      <div class="panel-title"><span class="pt-icon">📊</span> إحصاء الحماية الفورية</div>
-      <div id="prot-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ LIVE CONTROL ══ -->
-<div id="page-live" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>📡</span> التحكم المباشر</div><div class="page-desc">مسنجر مصغر + تنفيذ أي أمر في أي مجموعة — بث فوري</div></div>
-    <button class="btn btn-outline btn-sm" onclick="loadLivePage()">🔄 تحديث</button>
-  </div>
-  <!-- Mobile tabs -->
-  <div class="live-mob-tabs" id="live-tabs">
-    <button class="live-mob-tab act" onclick="setLiveTab('groups',this)">👥 المجموعات</button>
-    <button class="live-mob-tab" onclick="setLiveTab('chat',this)">💬 الدردشة</button>
-    <button class="live-mob-tab" onclick="setLiveTab('cmds',this)">⚡ الأوامر</button>
-  </div>
-  <!-- 3-column layout -->
-  <div class="live-layout" id="live-layout" data-tab="groups">
-    <!-- Panel 1: Groups -->
-    <div class="live-panel" id="lp-groups">
-      <div class="live-panel-hdr">👥 المجموعات <span id="lp-grp-count" style="font-weight:400;color:var(--muted);font-size:.64rem;margin-right:auto"></span></div>
-      <input class="live-search" id="lp-search" placeholder="🔍 بحث بالاسم أو ID…" oninput="filterLiveGroups(this.value)"/>
-      <div id="lp-grp-list" style="overflow-y:auto;flex:1">
-        <div class="live-empty">جارٍ التحميل…</div>
-      </div>
-    </div>
-    <!-- Panel 2: Chat -->
-    <div class="live-panel" id="lp-chat">
-      <div class="live-panel-hdr" id="lp-chat-hdr">💬 اختر مجموعة من القائمة</div>
-      <div id="lp-msgs" style="flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:5px">
-        <div class="live-empty">اختر مجموعة لعرض رسائلها</div>
-      </div>
-      <div class="live-send-bar">
-        <input class="live-send-ipt" id="lp-send-input" placeholder="أرسل رسالة للمجموعة المحددة…" onkeydown="if(event.key==='Enter')sendLiveMsg()"/>
-        <button class="btn btn-primary btn-sm" onclick="sendLiveMsg()" style="padding:7px 12px">📤</button>
-      </div>
-    </div>
-    <!-- Panel 3: Commands -->
-    <div class="live-panel" id="lp-cmds">
-      <div class="live-panel-hdr">⚡ أوامر البوت</div>
-      <div style="padding:6px 8px;border-bottom:1px solid var(--border);font-size:.63rem;color:var(--muted2);flex-shrink:0">اضغط أي أمر لتنفيذه في المجموعة المحددة</div>
-      <div id="lp-cmd-grid" style="overflow-y:auto;flex:1;padding:7px;display:grid;grid-template-columns:1fr 1fr;gap:5px">
-        <div class="live-empty" style="grid-column:span 2">جارٍ التحميل…</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ COMMANDS ══ -->
-<div id="page-commands" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>⚙️</span> الأوامر</div><div class="page-desc">إدارة وتعديل وتنفيذ الأوامر</div></div>
-    <div id="cmd-hdr-actions" style="display:flex;gap:8px">
-      <input type="text" id="cmd-search" placeholder="🔍 بحث…" style="background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:7px 12px;font-size:.78rem;outline:none;width:160px" oninput="filterCmds(this.value)"/>
-      <button class="btn btn-primary btn-sm" onclick="openAddCmd()">➕ أمر جديد</button>
-    </div>
-  </div>
-  <div class="page-content">
-    <!-- Sub-tabs -->
-    <div style="display:flex;gap:4px;margin-bottom:16px;background:#080816;padding:4px;border-radius:10px;border:1px solid var(--border)">
-      <button class="cmd-stab active" id="cmd-stab-list" onclick="switchCmdTab('list',this)" style="flex:1;padding:7px 4px;border-radius:8px;border:none;background:transparent;color:var(--muted2);font-size:.78rem;cursor:pointer;transition:all .2s;font-weight:700">📋 قائمة الأوامر</button>
-      <button class="cmd-stab" id="cmd-stab-exec" onclick="switchCmdTab('exec',this)" style="flex:1;padding:7px 4px;border-radius:8px;border:none;background:transparent;color:var(--muted2);font-size:.78rem;cursor:pointer;transition:all .2s;font-weight:700">⚡ منفذ الأوامر</button>
-    </div>
-    <!-- List pane -->
-    <div id="cmd-pane-list">
-      <div id="cmd-grid" class="cmd-grid"></div>
-    </div>
-    <!-- Executor pane -->
-    <div id="cmd-pane-exec" style="display:none">
-      <div class="panel">
-        <div class="panel-title"><span class="pt-icon">⚡</span> منفذ الأوامر — تنفيذ أي أمر مباشرة من اللوحة</div>
-        <div class="form-row">
-          <label>الأمر</label>
-          <select id="exec-cmd-select" onchange="onExecCmdChange()" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%">
-            <option value="">اختر أمراً…</option>
-          </select>
-        </div>
-        <div id="exec-cmd-info" style="display:none;background:#080816;border:1px solid var(--border);border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:.75rem;line-height:1.7">
-          <span id="exec-cmd-desc" style="color:var(--muted2)"></span>
-          <span style="color:var(--accent2)">الاستخدام: <code id="exec-cmd-usage" style="background:#1a1a40;padding:1px 5px;border-radius:4px"></code></span>
-        </div>
-        <div class="form-row">
-          <label>الوسيطات (args) — اختيارية، مفصولة بمسافات</label>
-          <input id="exec-args" placeholder="مثال: نص_ما أو @uid أو رقم" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%"/>
-        </div>
-        <div style="margin-bottom:12px">
-          <label style="font-size:.72rem;color:var(--muted2);font-weight:600;display:block;margin-bottom:8px">الهدف</label>
-          <div style="display:flex;gap:16px;flex-wrap:wrap">
-            <label style="display:flex;align-items:center;gap:7px;font-size:.82rem;cursor:pointer;color:var(--text)">
-              <input type="radio" name="exec-target" value="specific" checked onchange="onExecTargetChange()" style="accent-color:var(--accent)"> محادثة محددة
-            </label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:.82rem;cursor:pointer;color:var(--text)">
-              <input type="radio" name="exec-target" value="all" onchange="onExecTargetChange()" style="accent-color:var(--accent)"> كل المجموعات المعروفة
-            </label>
+        <!-- Stats Grid -->
+        <div class="card">
+          <div class="card-header"><span class="icon">📊</span> الإحصائيات</div>
+          <div class="stat-grid">
+            <div class="stat-item"><div class="stat-value" id="s-uptime">—</div><div class="stat-label">وقت التشغيل</div></div>
+            <div class="stat-item"><div class="stat-value" id="s-mem">—</div><div class="stat-label">الذاكرة MB</div></div>
+            <div class="stat-item"><div class="stat-value" id="s-cmds">—</div><div class="stat-label">الأوامر</div></div>
+            <div class="stat-item"><div class="stat-value" id="s-msgs">0</div><div class="stat-label">الرسائل</div></div>
           </div>
         </div>
-        <div id="exec-specific-row">
-          <div class="form-grid">
-            <div class="form-row">
-              <label>Thread ID المحادثة</label>
-              <input id="exec-tid" placeholder="100000000000000" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%"/>
-            </div>
-            <div class="form-row">
-              <label>أو اختر من المعروفة</label>
-              <select id="exec-known-threads" onchange="if(this.value)$('exec-tid').value=this.value" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;transition:border .2s;width:100%">
-                <option value="">— اختر محادثة —</option>
-              </select>
-            </div>
+
+        <!-- Cookies Upload -->
+        <div class="card">
+          <div class="card-header"><span class="icon">🍪</span> تحديث الكوكيز</div>
+          <div class="cookies-section">
+            <textarea id="cookie-input" placeholder="الصق الكوكيز هنا (JSON أو Netscape أو Token)..."></textarea>
+            <button class="btn-primary" onclick="uploadCookies()">تحديث وإعادة الدخول</button>
+            <button class="btn-primary btn-danger" onclick="reLogin()" style="margin-top:4px">🔄 إعادة تسجيل الدخول فقط</button>
           </div>
         </div>
-        <div id="exec-all-warn" style="display:none;background:#1a1000;border:1px solid #f9731640;border-radius:9px;padding:9px 12px;font-size:.76rem;color:var(--orange);margin-bottom:12px">
-          ⚠️ سيتم تنفيذ الأمر في <strong id="exec-all-count">جميع</strong> المجموعات المعروفة في قاعدة البيانات
+
+      </div>
+
+      <!-- RIGHT: Messages + Logs -->
+      <div class="right-panel">
+
+        <!-- Last Message -->
+        <div class="card last-msg-card">
+          <div class="card-header"><span class="icon">💬</span> آخر رسالة <span id="msg-counter" style="margin-right:auto;background:#1a1a38;padding:2px 8px;border-radius:10px;font-size:11px">0</span></div>
+          <div class="last-msg-body" id="last-msg-area">
+            <div class="last-msg-empty">في انتظار الرسائل...</div>
+          </div>
         </div>
-        <button class="btn btn-primary" id="exec-btn" onclick="executeCommand()" style="width:100%;justify-content:center;padding:11px">
-          <span class="spin hidden" id="exec-spin"></span> ⚡ تنفيذ الأمر
-        </button>
-        <div id="exec-results" style="margin-top:14px;display:none">
-          <div class="panel-title" style="margin-bottom:8px"><span class="pt-icon">📊</span> نتائج التنفيذ <span id="exec-summary" style="font-size:.72rem;font-weight:400;color:var(--muted)"></span></div>
-          <div id="exec-results-list" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto"></div>
+
+        <!-- Live Logs -->
+        <div class="card logs-card">
+          <div class="card-header"><span class="icon">📜</span> السجلات المباشرة</div>
+          <div class="logs-body" id="logs-body"></div>
+          <div class="logs-controls">
+            <button class="clear-btn" onclick="clearLogs()">مسح</button>
+            <label><input type="checkbox" id="auto-scroll" checked/> تمرير تلقائي</label>
+          </div>
         </div>
+
       </div>
-      <div class="panel" style="border-color:#7c6cfc40">
-        <div class="panel-title"><span class="pt-icon">💡</span> ملاحظة</div>
-        <div style="font-size:.74rem;color:var(--muted2);line-height:1.8">
-          الأوامر تُنفَّذ وكأنها صادرة من المالك (owner) — <strong>صلاحيات كاملة</strong><br>
-          الرد سيصل للمجموعة المستهدفة مباشرة في ماسنجر<br>
-          <span style="color:var(--orange)">⚠️ تأكد من صحة الأمر قبل التنفيذ على كل المجموعات</span>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+  let socket = null;
+  let msgCount = 0;
+  const MAX_LOGS = 200;
+
+  // ─── Auth ───────────────────────────────────────────────────────────────────
+  async function doLogin() {
+    const pass = document.getElementById('pass-input').value;
+    const err  = document.getElementById('login-err');
+    err.style.display = 'none';
+    try {
+      const r = await fetch('/api/login', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ password: pass }),
+        credentials: 'include'
+      });
+      if (!r.ok) { err.style.display = 'block'; return; }
+      showApp();
+    } catch(e) { err.style.display='block'; err.textContent='خطأ في الاتصال'; }
+  }
+
+  async function doLogout() {
+    await fetch('/api/logout', { method:'POST', credentials:'include' });
+    location.reload();
+  }
+
+  // ─── Init ────────────────────────────────────────────────────────────────────
+  async function init() {
+    try {
+      const r = await fetch('/api/ping', { credentials:'include' });
+      if (r.ok) showApp();
+    } catch {}
+  }
+
+  function showApp() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    connectSocket();
+    loadStats();
+    loadLogs();
+  }
+
+  // ─── Stats ────────────────────────────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const r = await fetch('/api/stats', { credentials:'include' });
+      if (!r.ok) return;
+      const d = await r.json();
+      document.getElementById('bot-name').textContent  = d.botName || 'Lucifer Bot';
+      document.getElementById('bot-prefix').textContent = 'البادئة: ' + (d.prefix || '/');
+      document.getElementById('s-cmds').textContent    = d.commands || '—';
+      document.getElementById('s-mem').textContent     = d.memMB || '—';
+      setUptime(d.uptime || 0);
+      if (d.online && d.uid) {
+        setStatus('online', 'متصل ✓', d.uid);
+      } else {
+        setStatus('offline', 'غير متصل', '');
+      }
+    } catch {}
+    setTimeout(loadStats, 30000);
+  }
+
+  // ─── Uptime ───────────────────────────────────────────────────────────────────
+  function setUptime(sec) {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    document.getElementById('s-uptime').textContent = h > 0 ? h+'س '+m+'د' : m+'د';
+  }
+
+  // ─── Status ───────────────────────────────────────────────────────────────────
+  function setStatus(type, label, uid) {
+    const badge = document.getElementById('status-badge');
+    const stext = document.getElementById('status-text');
+    const icon  = document.getElementById('big-icon');
+    const blbl  = document.getElementById('big-label');
+    const buid  = document.getElementById('big-uid');
+
+    badge.className = 'status-badge ' + type;
+    stext.textContent = label;
+    blbl.textContent  = label;
+    buid.textContent  = uid ? 'UID: ' + uid : '—';
+
+    const icons = { online:'🟢', offline:'🔴', connecting:'🟡' };
+    icon.textContent = icons[type] || '⚫';
+  }
+
+  // ─── Socket ───────────────────────────────────────────────────────────────────
+  function connectSocket() {
+    socket = io({ transports:['polling','websocket'], withCredentials:true });
+
+    socket.on('connect', () => toast('🔌 متصل بالسيرفر'));
+    socket.on('disconnect', () => { toast('⚠️ انقطع الاتصال'); setStatus('offline','غير متصل',''); });
+
+    socket.on('bot-status', (d) => {
+      const map = { online:'online', offline:'offline', connecting:'connecting', degraded:'connecting', error:'offline' };
+      setStatus(map[d.status]||'offline', d.message||'', d.uid||'');
+    });
+
+    socket.on('message', (d) => {
+      msgCount++;
+      document.getElementById('msg-counter').textContent = msgCount;
+      document.getElementById('s-msgs').textContent = msgCount;
+      showLastMsg(d);
+    });
+
+    socket.on('log', (d) => addLog(d.level, d.msg, d.ts));
+  }
+
+  // ─── Last Message ─────────────────────────────────────────────────────────────
+  function showLastMsg(d) {
+    const area = document.getElementById('last-msg-area');
+    const time = new Date(d.timestamp || Date.now()).toLocaleTimeString('ar');
+    const isGroup = d.isGroup ? '👥 ' + (d.threadName || d.threadID) : '💬 خاص';
+    area.innerHTML = `
+      <div class="msg-bubble">
+        <div class="msg-meta">
+          <span class="msg-sender">${esc(d.senderName || d.senderID)}</span>
+          <span>${time}</span>
         </div>
+        <div class="msg-text">${esc(d.body || '(بدون نص)')}</div>
+        <div class="msg-thread">${isGroup}</div>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MEDIA ══ -->
-<div id="page-media" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>🖼️</span> مكتبة الوسائط</div><div class="page-desc">صور · GIF · فيديو · صوت — اربطها بالأوامر</div></div>
-    <button class="btn btn-outline btn-sm" onclick="loadMedia()">🔄 تحديث</button>
-  </div>
-  <div class="page-content">
-    <div class="panel">
-      <div class="panel-title"><span class="pt-icon">⬆️</span> رفع ملف</div>
-      <div class="drop-zone" id="drop-zone" onclick="$('media-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
-        <div class="dz-ico">📁</div>
-        <div class="dz-txt">اضغط أو اسحب الملف هنا</div>
-        <div class="dz-sub">صور · GIF · فيديو (mp4) · صوت (mp3) · حجم أقصى 50 MB</div>
-      </div>
-      <input type="file" id="media-file-input" style="display:none" accept="image/*,video/*,audio/*,.gif" onchange="uploadMedia(this.files[0])"/>
-      <div id="upload-status" class="ck-status" style="margin-top:10px"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-title"><span class="pt-icon">🗂️</span> الملفات المرفوعة <span id="media-count" style="color:var(--muted);font-size:.7rem;font-weight:400"></span></div>
-      <div class="media-grid" id="media-grid"><div style="color:var(--muted);font-size:.78rem">جارٍ التحميل…</div></div>
-    </div>
-    <div class="panel" style="border-color:#7c6cfc40">
-      <div class="panel-title"><span class="pt-icon">💡</span> كيف تستخدم الوسائط في أمر؟</div>
-      <div style="font-size:.74rem;color:var(--muted2);line-height:1.9">
-        بعد رفع صورة/صوت/فيديو، انسخ رابطها ثم استخدمها في كود الأمر كالتالي:<br>
-        <code style="background:#1a1a40;padding:4px 8px;border-radius:6px;display:inline-block;margin:4px 0;font-size:.72rem;color:var(--accent2)">
-const fs = require('fs-extra');<br>
-const path = require('path');<br>
-// الصورة:<br>
-api.sendMessage({ body: "مرحبا!", attachment: fs.createReadStream(path.join(__dirname,'../../src/dashboard/public/uploads/filename.jpg')) }, threadID);<br>
-// أو أرسل رابطاً مباشراً:<br>
-api.sendMessage({ body: "", url: "/uploads/filename.jpg" }, threadID);
-        </code>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SEND ══ -->
-<div id="page-send" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>💬</span> إرسال رسالة</div><div class="page-desc">أرسل رسالة مباشرة لأي محادثة</div></div>
-  </div>
-  <div class="page-content">
-    <div class="panel">
-      <div class="send-form">
-        <div class="form-row"><label>معرّف المحادثة (threadID)</label><input id="send-tid" placeholder="123456789012345"/></div>
-        <div class="form-row"><label>الرسالة</label><textarea id="send-msg" placeholder="اكتب رسالتك…" rows="4"></textarea></div>
-        <button class="btn btn-primary" id="send-btn" onclick="sendMsg()">📤 إرسال</button>
-      </div>
-      <div class="ck-status" id="send-status" style="margin-top:10px"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ LOG ══ -->
-<div id="page-log" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>📝</span> سجل الرسائل</div><div class="page-desc">مراقبة الرسائل والأوامر لحظياً</div></div>
-    <button class="btn btn-outline btn-sm" onclick="clearLog()">🗑️ مسح</button>
-  </div>
-  <div class="page-content">
-    <div class="panel" style="padding:12px">
-      <div id="msg-log"><div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SYSTEM LOGS ══ -->
-<div id="page-logs" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>📋</span> سجل النظام</div><div class="page-desc">سجلات البوت الفورية — مباشر</div></div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <select id="syslog-filter" onchange="renderSysLogs()" style="background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:.76rem;outline:none">
-        <option value="all">جميع المستويات</option>
-        <option value="log">معلومات</option>
-        <option value="warn">تحذير</option>
-        <option value="error">خطأ</option>
-      </select>
-      <button class="btn btn-outline btn-sm" onclick="clearSysLog()">🗑️ مسح</button>
-      <button class="btn btn-outline btn-sm" onclick="loadLogs()">🔄 تحديث</button>
-    </div>
-  </div>
-  <div class="page-content">
-    <div class="panel" style="padding:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-        <label style="display:flex;align-items:center;gap:7px;font-size:.76rem;cursor:pointer;color:var(--muted2)">
-          <input type="checkbox" id="syslog-autoscroll" checked style="accent-color:var(--accent)"> تمرير تلقائي
-        </label>
-        <span id="syslog-count" style="color:var(--muted);font-size:.72rem"></span>
-      </div>
-      <div id="bot-syslog" style="max-height:520px;overflow-y:auto;background:#04040f;border:1px solid var(--border);border-radius:9px;padding:10px;font-family:'Courier New',monospace">
-        <div class="no-logs" style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">جارٍ التحميل…</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ ADMINS ══ -->
-<div id="page-admins" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>👑</span> الأدمنز</div><div class="page-desc">التغييرات تُطبَّق فوراً — لا حاجة لإعادة تشغيل البوت</div></div>
-  </div>
-  <div class="page-content">
-    <div class="panel">
-      <div class="panel-title"><span class="pt-icon">👥</span> قائمة الأدمنز</div>
-      <div id="adm-live-badge" style="display:none;margin-bottom:10px;padding:7px 12px;border-radius:8px;background:#22c55e18;border:1px solid #22c55e40;color:#22c55e;font-size:.74rem;font-weight:600">
-        ✅ محدَّث في الذاكرة المباشرة — البوت يستخدم القائمة الجديدة الآن
-      </div>
-      <div class="admin-list" id="admin-list"></div>
-      <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
-        <input id="new-admin-uid" placeholder="Facebook UID للأدمن الجديد" style="background:#080816;border:1px solid var(--border);border-radius:9px;color:var(--text);padding:9px 12px;font-size:.82rem;outline:none;flex:1"/>
-        <button class="btn btn-success btn-sm" onclick="addAdmin()">➕ إضافة</button>
-      </div>
-      <div class="ck-status" id="adm-status" style="margin-top:8px"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-title"><span class="pt-icon">🔑</span> تغيير كلمة المرور</div>
-      <div class="form-grid">
-        <div class="form-row"><label>الحالية</label><input type="password" id="pw-cur" placeholder="كلمة المرور الحالية"/></div>
-        <div class="form-row"><label>الجديدة</label><input type="password" id="pw-new" placeholder="كلمة المرور الجديدة"/></div>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="changePw()">💾 حفظ</button>
-      <div class="ck-status" id="pw-status" style="margin-top:10px"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ CONFIG ══ -->
-<div id="page-config" class="page hidden">
-  <div class="page-header">
-    <div><div class="page-title"><span>🔧</span> الإعدادات</div><div class="page-desc">إعدادات البوت الأساسية</div></div>
-  </div>
-  <div class="page-content">
-    <div class="panel">
-      <div class="form-grid">
-        <div class="form-row"><label>اسم البوت</label><input id="cfg-name" placeholder="jarfis"/></div>
-        <div class="form-row"><label>البادئة (Prefix)</label><input id="cfg-prefix" placeholder="/"/></div>
-        <div class="form-row"><label>UID المالك</label><input id="cfg-owner" placeholder="100000000000000"/></div>
-        <div class="form-row"><label>المنطقة الزمنية</label><input id="cfg-tz" placeholder="Africa/Algiers"/></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary btn-sm" onclick="saveConfig()">💾 حفظ</button>
-        <button class="btn btn-outline btn-sm" onclick="loadConfig()">🔄 استرجاع</button>
-        <button class="btn btn-danger btn-sm" onclick="restartBot()">🔁 إعادة تشغيل</button>
-      </div>
-      <div class="ck-status" id="cfg-status" style="margin-top:10px"></div>
-    </div>
-  </div>
-</div>
-
-</div><!-- /main -->
-</div><!-- /app -->
-
-<!-- ══ MODAL: CMD VIEW/EDIT ══ -->
-<div class="modal" id="modal-cmd">
-  <div class="modal-box">
-    <div class="modal-hdr">
-      <h3 id="modal-cmd-title">الأمر</h3>
-      <button class="modal-close" onclick="closeModal('modal-cmd')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid" style="margin-bottom:12px">
-        <div class="form-row"><label>اسم الأمر</label><input id="edit-cmd-name" readonly style="opacity:.6"/></div>
-        <div class="form-row"><label>الوصف</label><input id="edit-cmd-desc" placeholder="وصف الأمر"/></div>
-        <div class="form-row"><label>الاستخدام</label><input id="edit-cmd-usage" placeholder="مثال: help [أمر]"/></div>
-        <div class="form-row"><label>الصنف</label>
-          <select id="edit-cmd-cat">
-            <option value="general">عام</option>
-            <option value="economy">الاقتصاد</option>
-            <option value="admin">الإدارة</option>
-            <option value="fun">الترفيه</option>
-            <option value="info">معلومات</option>
-            <option value="media">وسائط</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap">
-        <label style="font-size:.72rem;color:var(--muted2);font-weight:600">كود الأمر</label>
-        <button class="btn btn-outline btn-sm" onclick="insertMediaRef()">🖼️ إدراج وسائط</button>
-        <button class="btn btn-outline btn-sm" onclick="formatCode()">✨ تنسيق</button>
-      </div>
-      <textarea class="code-editor" id="edit-cmd-src" spellcheck="false"></textarea>
-      <div id="edit-cmd-media" style="margin-top:10px;display:none">
-        <div style="font-size:.73rem;color:var(--muted2);margin-bottom:6px">اختر ملف من المكتبة:</div>
-        <div class="media-grid" id="edit-media-picker" style="max-height:180px;overflow-y:auto"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-danger btn-sm" onclick="deleteCmd()">🗑️ حذف</button>
-      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-cmd')">إلغاء</button>
-      <button class="btn btn-primary btn-sm" onclick="saveCmd()">💾 حفظ التعديلات</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODAL: ADD CMD ══ -->
-<div class="modal" id="modal-add-cmd">
-  <div class="modal-box">
-    <div class="modal-hdr">
-      <h3>➕ أمر جديد</h3>
-      <button class="modal-close" onclick="closeModal('modal-add-cmd')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-grid" style="margin-bottom:12px">
-        <div class="form-row"><label>اسم الأمر *</label><input id="new-cmd-name" placeholder="mycommand"/></div>
-        <div class="form-row"><label>الصنف</label>
-          <select id="new-cmd-cat">
-            <option value="general">عام</option><option value="economy">الاقتصاد</option>
-            <option value="admin">الإدارة</option><option value="fun">الترفيه</option>
-            <option value="info">معلومات</option><option value="media">وسائط</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-        <label style="font-size:.72rem;color:var(--muted2);font-weight:600">كود الأمر *</label>
-        <button class="btn btn-outline btn-sm" onclick="fillTemplate()">📄 قالب جاهز</button>
-        <button class="btn btn-outline btn-sm" onclick="insertMediaRefNew()">🖼️ إدراج وسائط</button>
-      </div>
-      <textarea class="code-editor" id="new-cmd-src" spellcheck="false" placeholder="module.exports = { config: { name: 'mycommand', ... }, async run({ api, event, args, threadID }) { ... } };"></textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-add-cmd')">إلغاء</button>
-      <button class="btn btn-primary" onclick="saveNewCmd()">💾 إضافة الأمر</button>
-    </div>
-  </div>
-</div>
-
-<div id="toast-wrap"></div>
-
-<script>
-/* ══ GLOBALS ══ */
-let _page = 'dashboard';
-let _allCmds = [];
-let _socket = null;
-let _editingCmd = null;
-let _allMedia = [];
-
-/* ══ UTILS ══ */
-const $ = id => document.getElementById(id);
-const toast = (msg, type='info') => {
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.textContent = msg;
-  $('toast-wrap').appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(()=>el.remove(),400); }, 3500);
-};
-const fmtUptime = s => {
-  s=Math.floor(s);const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60),ss=s%60;
-  if(d>0)return `${d}ي ${h}س`;if(h>0)return `${h}س ${m}د`;if(m>0)return `${m}د ${ss}ث`;return `${ss}ث`;
-};
-const fmtSize = b => b>1048576?`${(b/1048576).toFixed(1)}MB`:b>1024?`${(b/1024).toFixed(0)}KB`:`${b}B`;
-const apiFetch = async (url, opts={}) => {
-  const r = await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json'},...opts});
-  const j = await r.json().catch(()=>({error:'Invalid JSON'}));
-  return {ok:r.ok,status:r.status,data:j};
-};
-function showStatus(id,msg,type){const el=$(id);if(!el)return;el.className=`ck-status show ${type}`;el.innerHTML=`<span>${type==='ok'?'✅':type==='err'?'❌':type==='warn'?'⚠️':'ℹ️'}</span><span>${msg}</span>`;}
-function hideStatus(id){const el=$(id);if(el)el.className='ck-status';}
-
-/* ══ AUTH ══ */
-const doLogin = async () => {
-  const pw=$('login-pw').value.trim();
-  if(!pw)return $('login-err').textContent='أدخل كلمة المرور';
-  $('login-err').textContent='';
-  const btn=document.querySelector('.lc-btn');btn.textContent='…';btn.disabled=true;
-  const r=await apiFetch('/api/login',{method:'POST',body:JSON.stringify({password:pw})});
-  btn.textContent='دخول';btn.disabled=false;
-  if(r.ok){$('login-screen').classList.add('hidden');$('app').classList.remove('hidden');onReady();}
-  else $('login-err').textContent=r.data.error||'خطأ';
-};
-const doLogout=async()=>{await apiFetch('/api/logout',{method:'POST'});location.reload();};
-$('login-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-
-/* ══ SOCKET ══ */
-function initSocket(){
-  _socket=io({transports:['polling','websocket']});
-  _socket.on('bot-status',d=>updateStatus(d));
-  _socket.on('message',d=>{addLog(d);liveAppendMsg(d);});
-  _socket.on('command',d=>addCmdLog(d));
-  _socket.on('cookies-updated',d=>{
-    loadCookieStatus();
-    const msg=d.message||(d.count?`${d.count} كوكي`:'');
-    toast(`✅ الكوكيز محدّثة${msg?' — '+msg:''}`, 'ok');
-  });
-  _socket.on('log',e=>addSysLog(e));
-  // تحديث الأدمنز في الوقت الفعلي من أي جهاز متصل
-  _socket.on('admins-updated',d=>{
-    // أعد رسم القائمة مباشرةً بدون طلب API جديد
-    _renderAdminList(d.ownerID||'', d.adminIDs||[]);
-    // أظهر شارة "مُطبَّق مباشرةً"
-    const badge=$('adm-live-badge');
-    if(badge){badge.style.display='block';setTimeout(()=>badge.style.display='none',4000);}
-    // حدِّث عداد الداشبورد
-    const el=$('inf-admins');if(el)el.textContent=(d.adminIDs||[]).length;
-  });
-}
-function updateStatus(d){
-  const dot=$('sb-dot'),msg=$('sb-msg');
-  dot.className='';
-  if(d.status==='online')dot.classList.add('online');
-  else if(d.status==='connecting')dot.classList.add('connecting');
-  else if(d.status==='error'||d.status==='degraded')dot.classList.add('error');
-  else dot.classList.add('offline');
-  msg.textContent=d.message||d.status;
-}
-
-/* ══ NAV ══ */
-function goto(page){
-  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const el=$('page-'+page);if(el)el.classList.remove('hidden');
-  _page=page;
-  document.querySelectorAll('.nav-item').forEach(n=>{if(n.dataset.page===page)n.classList.add('active');});
-  closeSidebar();
-  if(page==='dashboard')loadStats();
-  if(page==='cookies')loadCookieStatus();
-  if(page==='protection')loadProtection();
-  if(page==='commands')loadCommands();
-  if(page==='media')loadMedia();
-  if(page==='admins')loadAdmins();
-  if(page==='config')loadConfig();
-  if(page==='logs')loadLogs();
-}
-
-/* ══ SYSTEM LOGS ══ */
-let _sysLogs=[];
-async function loadLogs(){
-  const r=await apiFetch('/api/logs');
-  if(!r.ok)return;
-  _sysLogs=r.data||[];
-  renderSysLogs();
-}
-function sysLogHtml(e){
-  const t=new Date(e.ts||Date.now()).toLocaleTimeString('ar-DZ',{hour12:false});
-  const c=e.level==='error'?'#f87171':e.level==='warn'?'#fb923c':e.level==='info'?'#60a5fa':'#94a3b8';
-  const b=e.level==='error'?'ERR':e.level==='warn'?'WARN':e.level==='info'?'INFO':'LOG';
-  const msg=(e.msg||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return `<div style="display:flex;gap:8px;align-items:baseline;padding:2px 0;border-bottom:1px solid #0a0a1a;line-height:1.6"><span style="color:#475569;flex-shrink:0;font-size:.66rem">${t}</span><span style="color:${c};font-weight:700;font-size:.62rem;flex-shrink:0;min-width:34px">[${b}]</span><span style="color:#cbd5e1;word-break:break-all;font-size:.71rem">${msg}</span></div>`;
-}
-function renderSysLogs(){
-  const el=$('bot-syslog');if(!el)return;
-  const f=$('syslog-filter')?.value||'all';
-  const list=f==='all'?_sysLogs:_sysLogs.filter(e=>e.level===f);
-  if(!list.length){el.innerHTML='<div class="no-logs" style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">لا توجد سجلات…</div>';const c=$('syslog-count');if(c)c.textContent='';return;}
-  el.innerHTML=list.map(sysLogHtml).join('');
-  const c=$('syslog-count');if(c)c.textContent=`${list.length} سجل`;
-  if($('syslog-autoscroll')?.checked)el.scrollTop=el.scrollHeight;
-}
-function addSysLog(e){
-  _sysLogs.push(e);
-  if(_sysLogs.length>600)_sysLogs.shift();
-  if(_page!=='logs')return;
-  const el=$('bot-syslog');if(!el)return;
-  const empty=el.querySelector('.no-logs');if(empty)empty.remove();
-  const f=$('syslog-filter')?.value||'all';
-  if(f==='all'||f===e.level){
-    el.insertAdjacentHTML('beforeend',sysLogHtml(e));
-    const c=$('syslog-count');if(c)c.textContent=`${_sysLogs.length} سجل`;
-    if($('syslog-autoscroll')?.checked)el.scrollTop=el.scrollHeight;
+    `;
   }
-}
-function clearSysLog(){_sysLogs=[];renderSysLogs();}
-function toggleSidebar(){$('sidebar').classList.toggle('open');$('overlay').classList.toggle('show');}
-function closeSidebar(){$('sidebar').classList.remove('open');$('overlay').classList.remove('show');}
 
-/* ══ MODAL ══ */
-function openModal(id){$(id).classList.add('open');$(id).style.display='flex';}
-function closeModal(id){$(id).classList.remove('open');$(id).style.display='none';}
-
-/* ══ STATS ══ */
-async function loadStats(){
-  const r=await apiFetch('/api/stats');if(!r.ok)return;
-  const d=r.data;
-  $('st-users').textContent=d.totalUsers??'—';
-  $('st-threads').textContent=d.totalThreads??'—';
-  $('st-cmds').textContent=d.totalCommands??'—';
-  $('st-uptime').textContent=fmtUptime(d.uptime||0);
-  $('inf-name').textContent=d.botName||'jarfis';
-  $('inf-prefix').textContent=d.prefix||'/';
-  $('inf-cmdcount').textContent=d.commands||'—';
-  $('inf-admins').textContent=d.adminCount??'—';
-  $('inf-ram').textContent=(d.memMB||'—')+' MB';
-  $('inf-node').textContent=d.nodeVersion||'—';
-  $('sb-ram').textContent=d.memMB||'—';$('sb-node').textContent=d.nodeVersion||'—';
-  if(d.uid)$('sb-uid').textContent=d.uid;
-  if(d.online)updateStatus({status:'online',message:`متصل ✔ (${d.uid||'?'})`});
-  loadProtection();
-}
-
-/* ══ COOKIE STATUS ══ */
-async function loadCookieStatus(){
-  const r=await apiFetch('/api/cookies');const d=r.data;const el=$('ck-current');
-  if(!d.exists||!d.count){
-    el.innerHTML=`<div style="color:var(--red);font-size:.78rem">❌ لا توجد كوكيز — ارفع الكوكيز أدناه</div>`;
-  } else {
-    const fmt = d.isToken ? '🔑 توكن' : d.format==='cookies'?'🍪 JSON':'📄 ملف';
-    el.innerHTML=`
-      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-        <div class="tag tag-green">✅ ${d.count} كوكي</div>
-        ${d.uid?`<div class="tag tag-blue">👤 UID: ${d.uid}</div>`:''}
-        <div class="tag" style="background:#7c6cfc20;color:var(--accent)">${fmt}</div>
-        <button class="btn btn-outline btn-sm" onclick="triggerRelogin()">🔄 إعادة تسجيل الدخول</button>
-      </div>`;
+  // ─── Logs ─────────────────────────────────────────────────────────────────────
+  async function loadLogs() {
+    try {
+      const r = await fetch('/api/logs?limit=80', { credentials:'include' });
+      if (!r.ok) return;
+      const logs = await r.json();
+      logs.forEach(l => addLog(l.level, l.msg, l.ts, false));
+      scrollLogs();
+    } catch {}
   }
-}
 
-/* ══ COOKIE TABS ══ */
-function setCkTab(tab,btn){
-  document.querySelectorAll('.cookie-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.cookie-pane').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  $('ck-pane-'+tab).classList.add('active');
-  hideStatus('ck-status');
-}
-function clearInput(id){$(id).value='';hideStatus('ck-status');}
-function getInput(type){
-  if(type==='json')return $('ck-json-input').value.trim();
-  if(type==='string')return $('ck-str-input').value.trim();
-  if(type==='token')return $('ck-tok-input').value.trim();
-  if(type==='netscape')return $('ck-ns-input').value.trim();
-}
-async function submitCookies(type){
-  const raw=getInput(type);if(!raw)return showStatus('ck-status','أدخل الكوكيز أولاً','err');
-  const spId=`sp-${type==='json'?'json':type==='string'?'str':type==='token'?'tok':'ns'}`;
-  const sp=$(spId);if(sp)sp.classList.remove('hidden');
-  showStatus('ck-status','جارٍ التحقق والحفظ وتغيير الحساب…','info');
-  const r=await apiFetch('/api/cookies',{method:'POST',body:JSON.stringify({cookies:raw})});
-  if(sp)sp.classList.add('hidden');
-  if(r.ok){
-    const d=r.data;
-    let msg=`✅ تم الحفظ — ${d.count||0} كوكي`;
-    if(d.uid)msg+=` · UID: ${d.uid}`;
-    msg+=' · 🔄 جارٍ تغيير الحساب تلقائياً…';
-    if(d.valid===false)msg+='\n⚠️ تحذير: mbasic لم يتعرف على الكوكيز';
-    showStatus('ck-status',msg,d.valid===false?'warn':'ok');
-    loadCookieStatus();toast('تم حفظ الكوكيز وتغيير الحساب','ok');
-  } else {showStatus('ck-status',r.data.error||'فشل الحفظ','err');}
-}
-async function validateOnly(type){
-  const raw=getInput(type);if(!raw)return showStatus('ck-status','أدخل الكوكيز أولاً','err');
-  showStatus('ck-status','جارٍ التحقق من صحة الكوكيز…','info');
-  const r=await apiFetch('/api/cookies/validate',{method:'POST',body:JSON.stringify({cookies:raw})});
-  if(r.ok){const d=r.data;showStatus('ck-status',d.message||(d.valid?'صالحة':'غير صالحة'),d.valid?'ok':d.valid===null?'info':'warn');}
-  else showStatus('ck-status',r.data.message||r.data.error||'خطأ','err');
-}
-async function deleteCookies(){
-  if(!confirm('هل أنت متأكد من حذف الكوكيز؟ سيُوقف البوت.'))return;
-  const r=await apiFetch('/api/cookies',{method:'DELETE'});
-  if(r.ok){toast('تم حذف الكوكيز','ok');loadCookieStatus();}else toast(r.data.error||'خطأ','err');
-}
-async function triggerRelogin(){
-  showStatus('ck-status','جارٍ إعادة تسجيل الدخول…','info');
-  const r=await apiFetch('/api/relogin',{method:'POST'});
-  if(r.ok)toast('جارٍ إعادة تسجيل الدخول…','info');
-  else toast(r.data.error||'خطأ','err');
-}
-
-/* ══ PROTECTION ══ */
-async function loadProtection(){
-  const r=await apiFetch('/api/protection');if(!r.ok)return;const d=r.data;
-  const map={
-    'p-typing':d.humanTyping?.enabled,'p-stealth':d.stealth?.enabled,'p-throttle':d.throttle?.enabled,
-    'p-mqtt':d.mqttHealth?.enabled,'p-keepalive':d.keepAlive?.enabled,
-    'qt-typing':d.humanTyping?.enabled,'qt-stealth':d.stealth?.enabled,'qt-keepalive':d.keepAlive?.enabled,
-    // الجديدة
-    'p-readrcpt':d.humanReadReceipt?.enabled,'p-natpres':d.naturalPresence?.enabled,
-    'p-scroll':d.scrollSimulator?.enabled,'p-antidet':d.antiDetection?.enabled,
-    'p-sessref':d.sessionRefresher?.enabled,'p-reactdly':d.reactionDelay?.enabled,
-    'p-jitter':d.connectionJitter?.enabled,'p-dedup':d.duplicateGuard?.enabled,
-    'p-typvar':d.typingVariator?.enabled,'p-behsched':d.behaviorScheduler?.enabled,
-  };
-  for(const[id,val]of Object.entries(map)){const el=$(id);if(el)el.checked=!!val;}
-  // إحصاء الحماية
-  const ps=$('prot-stats');if(!ps)return;
-  const stat=(val,lbl,color)=>`<div class="stat-card" style="padding:10px 12px"><div class="data"><div class="val" style="font-size:.9rem;${color?'color:'+color:''}">${val}</div><div class="lbl" style="font-size:.6rem">${lbl}</div></div></div>`;
-  let html='';
-  if(d.throttle){
-    html+=stat(d.throttle.trackedThreads??0,'محادثة مُراقبة');
-    html+=stat(d.throttle.burstCoolingActive?'⛔ بارد':'✅ هادئ','Burst',d.throttle.burstCoolingActive?'var(--red)':'var(--green)');
+  function addLog(level, msg, ts, doScroll=true) {
+    const body = document.getElementById('logs-body');
+    const div  = document.createElement('div');
+    div.className = 'log-line ' + (level||'log');
+    const t = ts ? new Date(ts).toLocaleTimeString('ar',{hour12:false}) : '';
+    div.innerHTML = `<span class="log-ts">${t}</span> ${esc(msg)}`;
+    body.appendChild(div);
+    while (body.children.length > MAX_LOGS) body.removeChild(body.firstChild);
+    if (doScroll) scrollLogs();
   }
-  if(d.stealth) html+=stat(d.stealth.isSleepHour?'🌙 نوم':'🟢 نشط','وضع Stealth',d.stealth.isSleepHour?'var(--blue)':'var(--green)');
-  if(d.naturalPresence?.running!==undefined) html+=stat(d.naturalPresence.currentState||'—','Natural Presence');
-  if(d.scrollSimulator?.scrollCount!==undefined) html+=stat(d.scrollSimulator.scrollCount,'تمرير مُنفَّذ');
-  if(d.antiDetection?.currentProfile) html+=stat(d.antiDetection.currentProfile.split(' ').slice(0,2).join(' '),'ملف الجهاز');
-  if(d.sessionRefresher?.refreshCount!==undefined) html+=stat(d.sessionRefresher.refreshCount,'تجديد جلسة');
-  if(d.connectionJitter?.networkProfile) html+=stat(d.connectionJitter.networkProfile,'شبكة');
-  if(d.duplicateGuard?.blockedCount!==undefined) html+=stat(d.duplicateGuard.blockedCount,'رسالة محجوبة','var(--orange)');
-  if(d.typingVariator?.currentMood) html+=stat(d.typingVariator.currentMood,'مزاج الكتابة');
-  if(d.behaviorScheduler?.skippedCount!==undefined) html+=stat(d.behaviorScheduler.skippedCount,'رد مؤجل');
-  ps.innerHTML=html||'<div style="color:var(--muted);font-size:.78rem">لا توجد إحصاءات بعد</div>';
-}
-async function toggleProt(system,enable){
-  const r=await apiFetch('/api/protection/toggle',{method:'POST',body:JSON.stringify({system,enable})});
-  if(r.ok){
-    const names={'humanTyping':'محاكاة الكتابة','stealth':'التخفي','mqttHealth':'MQTT','keepAlive':'Keep-Alive','throttle':'التقليل',
-      'humanReadReceipt':'تأخير القراءة','naturalPresence':'الحضور الطبيعي','scrollSimulator':'التمرير','antiDetection':'مكافحة الكشف',
-      'sessionRefresher':'تجديد الجلسة','reactionDelay':'تأخير الردود','connectionJitter':'تذبذب الاتصال',
-      'duplicateGuard':'منع التكرار','typingVariator':'تنويع الكتابة','behaviorScheduler':'جدولة السلوك'};
-    toast(`${enable?'✅':'⛔'} ${names[system]||system}`,'ok');
-  }else toast(r.data.error||'خطأ','err');
-}
-async function enableAllProt(){
-  const systems=['humanTyping','stealth','keepAlive','humanReadReceipt','naturalPresence','scrollSimulator',
-    'antiDetection','sessionRefresher','reactionDelay','connectionJitter','duplicateGuard','typingVariator','behaviorScheduler'];
-  for(const s of systems)await apiFetch('/api/protection/toggle',{method:'POST',body:JSON.stringify({system:s,enable:true})});
-  toast('✅ تم تفعيل جميع أنظمة الحماية','ok');loadProtection();
-}
 
-/* ══ CMD SUB-TABS ══ */
-function switchCmdTab(tab, btn){
-  document.querySelectorAll('.cmd-stab').forEach(t=>{t.style.background='transparent';t.style.color='var(--muted2)';});
-  if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';}
-  $('cmd-pane-list').style.display = tab==='list'?'':'none';
-  $('cmd-pane-exec').style.display = tab==='exec'?'':'none';
-  const hdrAct=$('cmd-hdr-actions');if(hdrAct)hdrAct.style.display=tab==='list'?'':'none';
-  if(tab==='exec'){populateExecCmds();loadKnownThreads();}
-}
-function populateExecCmds(){
-  const sel=$('exec-cmd-select');
-  sel.innerHTML='<option value="">اختر أمراً…</option>';
-  for(const c of _allCmds){
-    const o=document.createElement('option');
-    o.value=c.name;
-    o.textContent=`${c.name}${c.adminOnly?' 🔒':c.ownerOnly?' 👑':''}`;
-    o.dataset.desc=c.description||'';
-    o.dataset.usage=c.usage||c.name;
-    sel.appendChild(o);
+  function scrollLogs() {
+    if (document.getElementById('auto-scroll').checked) {
+      const b = document.getElementById('logs-body');
+      b.scrollTop = b.scrollHeight;
+    }
   }
-}
-function onExecCmdChange(){
-  const sel=$('exec-cmd-select');
-  const opt=sel.options[sel.selectedIndex];
-  const info=$('exec-cmd-info');
-  if(sel.value&&opt){
-    $('exec-cmd-desc').textContent=opt.dataset.desc?(opt.dataset.desc+' — '):'';
-    $('exec-cmd-usage').textContent=(window._prefix||'/')+opt.dataset.usage;
-    info.style.display='block';
-  } else { info.style.display='none'; }
-}
-async function loadKnownThreads(){
-  const r=await apiFetch('/api/threads');if(!r.ok)return;
-  const sel=$('exec-known-threads');
-  sel.innerHTML='<option value="">— اختر محادثة —</option>';
-  for(const t of r.data){
-    const o=document.createElement('option');
-    o.value=t.threadID;
-    o.textContent=`${t.name||t.threadID} (${t.threadID})`;
-    sel.appendChild(o);
+
+  function clearLogs() {
+    document.getElementById('logs-body').innerHTML = '';
   }
-  const cnt=$('exec-all-count');if(cnt)cnt.textContent=r.data.length||'صفر';
-}
-function onExecTargetChange(){
-  const val=document.querySelector('input[name="exec-target"]:checked')?.value;
-  const sr=$('exec-specific-row'),aw=$('exec-all-warn');
-  if(sr)sr.style.display=val==='specific'?'':'none';
-  if(aw)aw.style.display=val==='all'?'':'none';
-}
-async function executeCommand(){
-  const cmd=$('exec-cmd-select').value;
-  if(!cmd)return toast('اختر أمراً أولاً','err');
-  const target=document.querySelector('input[name="exec-target"]:checked')?.value;
-  const threadID=$('exec-tid').value.trim();
-  const allThreads=target==='all';
-  if(!allThreads&&!threadID)return toast('أدخل Thread ID أو اختر محادثة','err');
-  const argsRaw=$('exec-args').value.trim();
-  const args=argsRaw?argsRaw.split(/\s+/).filter(Boolean):[];
-  const btn=$('exec-btn'),sp=$('exec-spin');
-  if(sp)sp.classList.remove('hidden');btn.disabled=true;
-  const r=await apiFetch('/api/execute',{method:'POST',body:JSON.stringify({command:cmd,args,threadID:allThreads?null:threadID,allThreads})});
-  if(sp)sp.classList.add('hidden');btn.disabled=false;
-  if(r.ok){
-    const d=r.data;
-    const res=$('exec-results'),rl=$('exec-results-list'),sm=$('exec-summary');
-    res.style.display='block';
-    if(sm)sm.textContent=`(${d.ok||0}/${d.total||0} ناجح)`;
-    rl.innerHTML=d.results.map(x=>`
-      <div style="background:${x.success?'#052310':'#1a0505'};border:1px solid ${x.success?'#22c55e40':'#ef444440'};border-radius:8px;padding:8px 12px;font-size:.76rem;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap">
-        <span style="color:${x.success?'var(--green)':'var(--red)'}">${x.success?'✅':'❌'}</span>
-        <span style="font-family:monospace;color:var(--accent2);flex:1">${x.threadID}</span>
-        ${x.error?`<div style="color:var(--red);margin-top:2px;width:100%;font-size:.7rem">⚠ ${x.error}</div>`:''}
-      </div>`).join('');
-    toast(`⚡ تم التنفيذ: ${d.ok||0}/${d.total||0} ناجح`,(d.ok===d.total)?'ok':'warn');
-  } else { toast(r.data.error||'خطأ في التنفيذ','err'); }
-}
 
-/* ══ COMMANDS ══ */
-async function loadCommands(){
-  const r=await apiFetch('/api/commands');if(!r.ok)return;
-  _allCmds=r.data;renderCmds(_allCmds);
-}
-function renderCmds(list){
-  const icons=['⚡','🎯','🔮','🎲','💡','🔧','🎭','🌟','💬','🎪','🏆','💰','🎵','📸','🗡️'];
-  const g=$('cmd-grid');
-  if(!list.length){g.innerHTML='<div style="color:var(--muted);font-size:.78rem">لا توجد أوامر</div>';return;}
-  g.innerHTML=list.map((c,i)=>`
-    <div class="cmd-card" onclick="openCmdEditor('${c.name}')">
-      <div class="cc-ico">${icons[i%icons.length]}</div>
-      <div style="flex:1;min-width:0">
-        <div class="cc-name">${c.name}</div>
-        <div class="cc-desc">${c.description||'—'}</div>
-        <div>${c.adminOnly?`<span class="badge badge-admin">أدمن</span>`:''} ${c.ownerOnly?`<span class="badge badge-owner">مالك</span>`:''}</div>
-      </div>
-    </div>`).join('');
-}
-function filterCmds(q){
-  const f=_allCmds.filter(c=>c.name.includes(q.toLowerCase())||(c.description||'').toLowerCase().includes(q.toLowerCase()));
-  renderCmds(f);
-}
-async function openCmdEditor(name){
-  const r=await apiFetch(`/api/commands/${name}/source`);
-  if(!r.ok)return toast('تعذّر تحميل الكود','err');
-  _editingCmd=name;
-  $('modal-cmd-title').textContent=`تعديل: ${name}`;
-  $('edit-cmd-name').value=name;
-  $('edit-cmd-src').value=r.data.source;
-  // Extract description/usage from source
-  const descMatch=r.data.source.match(/description:\s*["']([^"']+)["']/);
-  const usageMatch=r.data.source.match(/usage:\s*["']([^"']+)["']/);
-  const catMatch=r.data.source.match(/category:\s*["']([^"']+)["']/);
-  $('edit-cmd-desc').value=descMatch?descMatch[1]:'';
-  $('edit-cmd-usage').value=usageMatch?usageMatch[1]:'';
-  if(catMatch){const sel=$('edit-cmd-cat');for(const o of sel.options)if(o.value===catMatch[1])o.selected=true;}
-  $('edit-cmd-media').style.display='none';
-  openModal('modal-cmd');
-}
-async function saveCmd(){
-  let src=$('edit-cmd-src').value.trim();if(!src)return toast('الكود فارغ','err');
-  // Inject updated description/usage if changed
-  const desc=$('edit-cmd-desc').value.trim();
-  const usage=$('edit-cmd-usage').value.trim();
-  if(desc)src=src.replace(/(description:\s*["'])([^"']*)["']/,`$1${desc}'`);
-  if(usage)src=src.replace(/(usage:\s*["'])([^"']*)["']/,`$1${usage}'`);
-  const r=await apiFetch(`/api/commands/${_editingCmd}`,{method:'PUT',body:JSON.stringify({source:src})});
-  if(r.ok){toast(`✅ تم حفظ ${_editingCmd}`,'ok');closeModal('modal-cmd');loadCommands();}
-  else toast(r.data.error||'خطأ','err');
-}
-async function deleteCmd(){
-  if(!confirm(`حذف أمر "${_editingCmd}"؟`))return;
-  const r=await apiFetch(`/api/commands/${_editingCmd}`,{method:'DELETE'});
-  if(r.ok){toast(`🗑️ حُذف ${_editingCmd}`,'ok');closeModal('modal-cmd');loadCommands();}
-  else toast(r.data.error||'خطأ','err');
-}
-function openAddCmd(){$('new-cmd-name').value='';$('new-cmd-src').value='';openModal('modal-add-cmd');}
-function fillTemplate(){
-  const name=$('new-cmd-name').value.trim()||'mycommand';
-  $('new-cmd-src').value=`module.exports = {
-  config: {
-    name: "${name}",
-    aliases: [],
-    description: "وصف الأمر",
-    usage: "${name}",
-    adminOnly: false,
-    ownerOnly: false,
-    category: "general",
-  },
-  async run({ api, event, args, threadID, senderID, prefix, isAdmin }) {
-    // كودك هنا
-    await api.sendMessage("مرحباً! هذا أمر ${name}", threadID);
-  },
-};`;
-}
-async function saveNewCmd(){
-  const name=$('new-cmd-name').value.trim();
-  const source=$('new-cmd-src').value.trim();
-  if(!name||!source)return toast('الاسم والكود مطلوبان','err');
-  const r=await apiFetch('/api/commands',{method:'POST',body:JSON.stringify({name,source})});
-  if(r.ok){toast(`✅ أُضيف ${name}`,'ok');closeModal('modal-add-cmd');loadCommands();}
-  else toast(r.data.error||'خطأ','err');
-}
-function formatCode(){const ta=$('edit-cmd-src');ta.value=ta.value;}
-
-// Insert media reference into code editor
-function insertMediaRef(){
-  $('edit-cmd-media').style.display='block';
-  loadMediaForPicker('edit-media-picker','edit-cmd-src');
-}
-function insertMediaRefNew(){
-  // open media picker inline in add modal
-  loadMediaForPicker('edit-media-picker-new','new-cmd-src');
-}
-async function loadMediaForPicker(gridId,taId){
-  const r=await apiFetch('/api/media');if(!r.ok)return;
-  const grid=$(gridId)||$('edit-media-picker');
-  grid.innerHTML=r.data.map(f=>`
-    <div class="media-card" onclick="insertMediaIntoCode('${f.url}','${f.filename}','${f.type}','${taId}')">
-      <div class="mc-thumb">${f.type==='image'?`<img src="${f.url}" loading="lazy">`:`<div class="mc-ico">${f.type==='video'?'🎬':f.type==='audio'?'🎵':'📄'}</div>`}</div>
-      <div class="mc-info"><div class="mc-name">${f.filename}</div></div>
-    </div>`).join('')||'<div style="color:var(--muted);font-size:.74rem">لا توجد ملفات — ارفع من صفحة الوسائط</div>';
-}
-function insertMediaIntoCode(url,filename,type,taId){
-  const ta=$(taId||'edit-cmd-src');
-  const ext=filename.split('.').pop().toLowerCase();
-  let snippet='';
-  if(type==='image'||type==='video'||type==='audio'){
-    snippet=`\n    // إرسال ملف وسائط: ${filename}\n    const fs=require('fs-extra'),path=require('path');\n    api.sendMessage({body:'',attachment:fs.createReadStream(path.join(__dirname,'../../src/dashboard/public${url}'))},threadID);\n`;
-  } else {
-    snippet=`\n    // رابط الملف: ${url}\n`;
+  // ─── Cookies ─────────────────────────────────────────────────────────────────
+  async function uploadCookies() {
+    const val = document.getElementById('cookie-input').value.trim();
+    if (!val) { toast('❌ الصق الكوكيز أولاً'); return; }
+    try {
+      const r = await fetch('/api/cookies', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        credentials:'include',
+        body: JSON.stringify({ cookies: val })
+      });
+      const d = await r.json();
+      toast(d.success ? '✅ تم تحديث الكوكيز' : ('❌ ' + d.error));
+    } catch(e) { toast('❌ ' + e.message); }
   }
-  const pos=ta.selectionStart;ta.value=ta.value.slice(0,pos)+snippet+ta.value.slice(ta.selectionEnd);
-  toast('تم إدراج مرجع الوسائط','ok');
-}
 
-/* ══ MEDIA ══ */
-async function loadMedia(){
-  const r=await apiFetch('/api/media');
-  _allMedia=r.ok?r.data:[];
-  $('media-count').textContent=`(${_allMedia.length} ملف)`;
-  const grid=$('media-grid');
-  if(!_allMedia.length){grid.innerHTML='<div style="color:var(--muted);font-size:.78rem">لا توجد ملفات مرفوعة</div>';return;}
-  grid.innerHTML=_allMedia.map(f=>`
-    <div class="media-card">
-      <div class="mc-thumb">${f.type==='image'?`<img src="${f.url}" loading="lazy">`:`<div class="mc-ico">${f.type==='video'?'🎬':f.type==='audio'?'🎵':'📄'}</div>`}</div>
-      <button class="mc-del" onclick="deleteMedia('${f.filename}',event)">🗑️</button>
-      <div class="mc-info">
-        <div class="mc-name" title="${f.filename}">${f.filename}</div>
-        <div class="mc-size">${fmtSize(f.size)}</div>
-        <div class="media-url-badge" onclick="copyUrl('${f.url}')" title="انسخ الرابط">${f.url}</div>
-      </div>
-    </div>`).join('');
-}
-async function uploadMedia(file){
-  if(!file)return;
-  $('drop-zone').classList.add('drag');
-  showStatus('upload-status',`جارٍ رفع: ${file.name}…`,'info');
-  const fd=new FormData();fd.append('file',file);
-  try{
-    const r=await fetch('/api/media/upload',{method:'POST',body:fd});
-    const d=await r.json();$('drop-zone').classList.remove('drag');
-    if(d.success){showStatus('upload-status',`✅ تم رفع: ${d.filename}`,'ok');toast('تم الرفع بنجاح','ok');loadMedia();}
-    else showStatus('upload-status',d.error||'فشل الرفع','err');
-  }catch(e){$('drop-zone').classList.remove('drag');showStatus('upload-status','خطأ في الرفع: '+e.message,'err');}
-  $('media-file-input').value='';
-}
-function handleDrop(e){
-  e.preventDefault();$('drop-zone').classList.remove('drag');
-  const file=e.dataTransfer.files[0];if(file)uploadMedia(file);
-}
-async function deleteMedia(filename,e){
-  e.stopPropagation();
-  if(!confirm(`حذف ${filename}؟`))return;
-  const r=await apiFetch(`/api/media/${filename}`,{method:'DELETE'});
-  if(r.ok){toast('تم الحذف','ok');loadMedia();}else toast(r.data.error||'خطأ','err');
-}
-function copyUrl(url){navigator.clipboard.writeText(url).then(()=>toast('تم نسخ الرابط','ok')).catch(()=>toast('تعذّر النسخ','err'));}
-
-/* ══ SEND ══ */
-async function sendMsg(){
-  const threadID=$('send-tid').value.trim(),message=$('send-msg').value.trim();
-  if(!threadID||!message)return showStatus('send-status','معرّف المحادثة والرسالة مطلوبان','err');
-  const btn=$('send-btn');btn.disabled=true;btn.textContent='…';
-  const r=await apiFetch('/api/send',{method:'POST',body:JSON.stringify({threadID,message})});
-  btn.disabled=false;btn.textContent='📤 إرسال';
-  if(r.ok){showStatus('send-status','✅ أُرسلت بنجاح','ok');$('send-msg').value='';}
-  else showStatus('send-status',r.data.error||'خطأ','err');
-}
-
-/* ══ LOG ══ */
-function addLog(d){
-  const el=$('msg-log');
-  const empty=el.querySelector('[style*="انتظار"]');if(empty)empty.remove();
-  const time=new Date(d.timestamp||Date.now()).toLocaleTimeString('ar-DZ',{hour12:false});
-  const item=document.createElement('div');item.className='log-item';
-  const isCmd=d.body&&d.body.startsWith(window._prefix||'/');
-  item.innerHTML=`
-    <div class="li-meta">
-      <span style="color:var(--muted)">${time}</span>
-      ${d.isGroup?`<span class="li-group">👥 ${d.threadName||d.threadID||'?'}</span>`:`<span style="color:var(--green);font-size:.6rem">💬 DM</span>`}
-      <span class="li-name">@${d.senderName||d.senderID||'?'}</span>
-      ${isCmd?`<span class="li-cmd">⚡ أمر</span>`:''}
-    </div>
-    <div class="li-body">${String(d.body||'').slice(0,300)||'<em style="color:var(--muted)">بدون نص</em>'}</div>`;
-  el.insertBefore(item,el.firstChild);
-  while(el.children.length>150)el.removeChild(el.lastChild);
-}
-function addCmdLog(d){
-  const el=$('msg-log');
-  const empty=el.querySelector('[style*="انتظار"]');if(empty)empty.remove();
-  const time=new Date(d.timestamp||Date.now()).toLocaleTimeString('ar-DZ',{hour12:false});
-  const item=document.createElement('div');item.className='log-item';
-  item.style.borderColor='var(--green)';
-  item.innerHTML=`<div class="li-meta"><span style="color:var(--muted)">${time}</span><span class="li-cmd">⚡ ${d.cmdName}</span><span class="li-name">uid:${d.senderID||'?'}</span></div>`;
-  el.insertBefore(item,el.firstChild);
-}
-function clearLog(){$('msg-log').innerHTML='<div style="color:var(--muted);font-size:.78rem;text-align:center;padding:20px">انتظار الرسائل…</div>';}
-
-/* ══ ADMINS ══ */
-function _renderAdminList(ownerID, adminIDs){
-  const el=$('admin-list');if(!el)return;
-  const rows=[];
-  if(ownerID)rows.push(`<div class="admin-row"><span class="admin-uid">${ownerID}</span><span class="admin-badge owner">👑 مالك</span></div>`);
-  for(const id of adminIDs)rows.push(`<div class="admin-row"><span class="admin-uid">${id}</span><span class="admin-badge">أدمن</span><button class="btn btn-danger btn-sm" onclick="removeAdmin('${id}')">🗑️</button></div>`);
-  el.innerHTML=rows.length?rows.join(''):'<div style="color:var(--muted);font-size:.78rem">لا يوجد أدمنز بعد</div>';
-}
-async function loadAdmins(){
-  const r=await apiFetch('/api/admins');if(!r.ok)return;
-  _renderAdminList(r.data.ownerID||'', r.data.adminIDs||[]);
-}
-async function addAdmin(){
-  const uid=$('new-admin-uid').value.trim();
-  if(!uid)return showStatus('adm-status','أدخل Facebook UID','err');
-  showStatus('adm-status','جارٍ الإضافة…','info');
-  const r=await apiFetch('/api/admins',{method:'POST',body:JSON.stringify({uid})});
-  if(r.ok){
-    $('new-admin-uid').value='';
-    showStatus('adm-status','✅ تمت الإضافة وطُبِّقت فوراً على البوت','ok');
-    toast('✅ تم إضافة الأدمن — يعمل الآن بدون إعادة تشغيل','ok');
-    // القائمة ستُحدَّث تلقائياً عبر حدث admins-updated من Socket
-  } else {
-    showStatus('adm-status',r.data.error||'فشل الإضافة','err');
-    toast(r.data.error||'خطأ','err');
+  async function reLogin() {
+    try {
+      const r = await fetch('/api/relogin', { method:'POST', credentials:'include' });
+      const d = await r.json();
+      toast(d.success ? '🔄 جارٍ إعادة الدخول...' : ('❌ ' + d.error));
+    } catch(e) { toast('❌ ' + e.message); }
   }
-}
-async function removeAdmin(uid){
-  if(!confirm(`حذف الأدمن ${uid}؟`))return;
-  showStatus('adm-status','جارٍ الحذف…','info');
-  const r=await apiFetch(`/api/admins/${uid}`,{method:'DELETE'});
-  if(r.ok){
-    showStatus('adm-status','✅ حُذف وطُبِّق فوراً على البوت','ok');
-    toast('تم الحذف — مُطبَّق فوراً','ok');
-  } else {
-    showStatus('adm-status',r.data.error||'فشل الحذف','err');
-    toast(r.data.error||'خطأ','err');
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────────
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
-}
-async function changePw(){
-  const cur=$('pw-cur').value,nw=$('pw-new').value;if(!cur||!nw)return showStatus('pw-status','الحقول مطلوبة','err');
-  const r=await apiFetch('/api/config/password',{method:'POST',body:JSON.stringify({current:cur,newPassword:nw})});
-  if(r.ok){showStatus('pw-status','✅ تم التغيير','ok');$('pw-cur').value='';$('pw-new').value='';}
-  else showStatus('pw-status',r.data.error||'خطأ','err');
-}
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
 
-/* ══ CONFIG ══ */
-async function loadConfig(){
-  const r=await apiFetch('/api/config');if(!r.ok)return;const d=r.data;
-  $('cfg-name').value=d.botName||'jarfis';$('cfg-prefix').value=d.prefix||'/';
-  $('cfg-owner').value=d.ownerID||'';$('cfg-tz').value=d.timezone||'Africa/Algiers';
-  window._prefix=d.prefix||'/';
-}
-async function saveConfig(){
-  const body={botName:$('cfg-name').value.trim(),prefix:$('cfg-prefix').value.trim()||'/',ownerID:$('cfg-owner').value.trim(),timezone:$('cfg-tz').value.trim()};
-  const r=await apiFetch('/api/config',{method:'POST',body:JSON.stringify(body)});
-  if(r.ok){showStatus('cfg-status','✅ تم الحفظ','ok');toast('تم حفظ الإعدادات','ok');window._prefix=body.prefix;}
-  else showStatus('cfg-status',r.data.error||'خطأ','err');
-}
-async function restartBot(){
-  if(!confirm('إعادة تشغيل البوت الكاملة؟'))return;
-  await apiFetch('/api/restart',{method:'POST'});
-  toast('جارٍ إعادة التشغيل…','info');
-}
-
-/* ══ LIVE PAGE ══ */
-let _liveTID=null,_liveGroups=[],_liveCmds=[],_liveRoles={};
-function setLiveTab(tab,btn){
-  document.querySelectorAll('.live-mob-tab').forEach(b=>b.classList.remove('act'));
-  if(btn)btn.classList.add('act');
-  const lay=$('live-layout');if(lay)lay.setAttribute('data-tab',tab);
-}
-async function loadLivePage(){
-  const [gr,cr,cmdR]=await Promise.all([
-    apiFetch('/api/threads'),
-    apiFetch('/api/command-roles'),
-    apiFetch('/api/commands')
-  ]);
-  _liveGroups=gr.ok?gr.data:[];
-  _liveRoles=cr.ok?cr.data:{};
-  _liveCmds=cmdR.ok?cmdR.data:[];
-  const cnt=$('lp-grp-count');if(cnt)cnt.textContent=`(${_liveGroups.length})`;
-  renderLiveGroups(_liveGroups);
-  renderLiveCmds();
-}
-function renderLiveGroups(list){
-  const el=$('lp-grp-list');if(!el)return;
-  if(!list.length){el.innerHTML='<div class="live-empty">لا توجد مجموعات بعد — انتظر أول رسالة يستقبلها البوت</div>';return;}
-  el.innerHTML=list.map(g=>{
-    const sel=_liveTID===g.threadID?'sel':'';
-    return`<div class="live-grp-item ${sel}" data-tid="${g.threadID}" onclick="selectLiveGroup('${g.threadID}','${String(g.name||g.threadID).replace(/'/g,"\\'")}')">
-      <div class="live-grp-name">${g.name||g.threadID}</div>
-      <div class="live-grp-id">${g.threadID}</div>
-    </div>`;}).join('');
-}
-function filterLiveGroups(q){
-  const f=q?_liveGroups.filter(g=>(g.name||'').includes(q)||g.threadID.includes(q)):_liveGroups;
-  renderLiveGroups(f);
-}
-async function selectLiveGroup(tid,name){
-  _liveTID=tid;
-  const hdr=$('lp-chat-hdr');if(hdr)hdr.textContent=`💬 ${name}`;
-  document.querySelectorAll('.live-grp-item').forEach(el=>{
-    el.classList.toggle('sel',el.dataset.tid===tid);
-  });
-  const msgs=$('lp-msgs');if(!msgs)return;
-  msgs.innerHTML='<div class="live-empty" style="color:var(--accent2)">⏳ جارٍ تحميل الرسائل…</div>';
-  const r=await apiFetch(`/api/threads/${encodeURIComponent(tid)}/messages`);
-  msgs.innerHTML='';
-  const data=r.ok?(Array.isArray(r.data)?r.data:[]):[];
-  if(!data.length){msgs.innerHTML='<div class="live-empty">لا توجد رسائل محفوظة بعد — الرسائل الجديدة ستظهر هنا فوراً</div>';return;}
-  data.forEach(m=>_appendMsgEl(msgs,m));
-  msgs.scrollTop=msgs.scrollHeight;
-  // Switch to chat tab on mobile
-  const isMob=window.innerWidth<=900;
-  if(isMob){document.querySelectorAll('.live-mob-tab').forEach((b,i)=>{b.classList.toggle('act',i===1);});setLiveTab('chat',null);}
-}
-function _appendMsgEl(container,msg){
-  const empty=container.querySelector('.live-empty');if(empty)empty.remove();
-  const time=new Date(msg.timestamp||Date.now()).toLocaleTimeString('ar-DZ',{hour12:false,hour:'2-digit',minute:'2-digit'});
-  const isBot=msg.senderID===String(window._botUID||'');
-  const el=document.createElement('div');
-  el.className='live-msg-item'+(isBot?' self':'');
-  el.innerHTML=`<div class="live-msg-name" style="color:${isBot?'var(--accent)':'var(--accent2)'}">${msg.senderName||msg.senderID||'مجهول'}</div><div class="live-msg-body">${String(msg.body||'').slice(0,400)||'<em style="opacity:.5">رسالة بدون نص</em>'}</div><div class="live-msg-time">${time}</div>`;
-  container.appendChild(el);
-  while(container.children.length>100)container.removeChild(container.firstChild);
-}
-function liveAppendMsg(msg){
-  if(!_liveTID||msg.threadID!==_liveTID)return;
-  const msgs=$('lp-msgs');if(!msgs)return;
-  _appendMsgEl(msgs,msg);
-  msgs.scrollTop=msgs.scrollHeight;
-  // Update group last msg
-  const gEl=document.querySelector(`.live-grp-item[data-tid="${msg.threadID}"]`);
-  if(gEl){const lbl=gEl.querySelector('.live-grp-last');if(lbl)lbl.textContent=String(msg.body||'').slice(0,40);}
-}
-function renderLiveCmds(){
-  const grid=$('lp-cmd-grid');if(!grid)return;
-  if(!_liveCmds.length){grid.innerHTML='<div class="live-empty" style="grid-column:span 2">لا توجد أوامر</div>';return;}
-  grid.innerHTML=_liveCmds.map(c=>{
-    const role=_liveRoles[c.name]||(c.ownerOnly?'owner':c.adminOnly===false?'member':'admin');
-    const cls=c.ownerOnly?'lc-owner':role==='member'?'lc-member':'';
-    const rlbl=c.ownerOnly?'👑 مالك':role==='member'?'🌐 عام':'🔒 أدمن';
-    const rcls=c.ownerOnly?'r-owner':role==='member'?'r-member':'r-admin';
-    return`<button class="live-cmd-btn ${cls}" onclick="runLiveCmd('${c.name}')">
-      <span>${c.name}</span>
-      <span class="live-cmd-role-lbl ${rcls}">${rlbl}</span>
-    </button>`;}).join('');
-}
-async function runLiveCmd(cmdName){
-  if(!_liveTID){toast('اختر مجموعة أولاً ثم اضغط الأمر','err');setLiveTab('groups',document.querySelector('.live-mob-tab'));return;}
-  const r=await apiFetch('/api/execute',{method:'POST',body:JSON.stringify({command:cmdName,args:[],threadID:_liveTID})});
-  if(r.ok){const d=r.data;toast(`⚡ ${cmdName}: ${d.ok||0}/${d.total||1} ناجح`,d.ok>0?'ok':'err');}
-  else toast(r.data?.error||'خطأ في التنفيذ','err');
-}
-async function sendLiveMsg(){
-  const input=$('lp-send-input');if(!input)return;
-  const message=input.value.trim();
-  if(!message)return;
-  if(!_liveTID){toast('اختر مجموعة أولاً','err');return;}
-  const r=await apiFetch('/api/send',{method:'POST',body:JSON.stringify({threadID:_liveTID,message})});
-  if(r.ok){input.value='';toast('✅ أُرسلت','ok');}
-  else toast(r.data?.error||'خطأ في الإرسال','err');
-}
-
-/* ══ READY ══ */
-async function onReady(){
-  initSocket();await loadStats();loadCookieStatus();
-  const cfg=await apiFetch('/api/config');if(cfg.ok)window._prefix=cfg.data.prefix||'/';
-}
-/* ══ AUTO INIT ══ */
-(async()=>{
-  const r=await apiFetch('/api/ping');
-  if(r.ok){const pr=await apiFetch('/api/stats');if(pr.ok){$('login-screen').classList.add('hidden');$('app').classList.remove('hidden');await onReady();}}
-})();
-</script>
-</body>
-</html>
+  init();
+  </script>
+  </body>
+  </html>
