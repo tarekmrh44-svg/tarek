@@ -489,14 +489,27 @@ async function main() {
     userAgent: "Mozilla/5.0 (Linux; Android 12; M2102J20SG) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Mobile Safari/537.36",
   };
 
-  const config = fs.existsSync(CONFIG_PATH)
-    ? { ...defaults, ...fs.readJsonSync(CONFIG_PATH) }
-    : defaults;
+  // ── BOT_CONFIG env var (Railway) — أعلى أولوية ─────────────────────────
+    let envConfig = {};
+    if (process.env.BOT_CONFIG) {
+      try {
+        envConfig = JSON.parse(process.env.BOT_CONFIG);
+        log.ok("BOT_CONFIG محمَّل من متغير البيئة ✔");
+      } catch (e) {
+        log.warn(`BOT_CONFIG: خطأ في التحليل — ${e.message}`);
+      }
+    }
 
-  if (!fs.existsSync(CONFIG_PATH)) {
-    fs.writeJsonSync(CONFIG_PATH, defaults, { spaces: 2 });
-    log.warn("config.json تم إنشاؤه بالقيم الافتراضية");
-  }
+    const config = {
+      ...defaults,
+      ...(fs.existsSync(CONFIG_PATH) ? fs.readJsonSync(CONFIG_PATH) : {}),
+      ...envConfig,
+    };
+
+    if (!fs.existsSync(CONFIG_PATH)) {
+      fs.writeJsonSync(CONFIG_PATH, defaults, { spaces: 2 });
+      log.warn("config.json تم إنشاؤه بالقيم الافتراضية");
+    }
 
   global.config        = config;
   global.commandPrefix = config.prefix   || "/";
