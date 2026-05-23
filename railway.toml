@@ -1,0 +1,10 @@
+[build]
+  buildCommand = "cd bot && npm install --legacy-peer-deps"
+
+  [deploy]
+  startCommand = "cd bot && sh start.sh"
+  healthcheckPath = "/api/ping"
+  healthcheckTimeout = 60
+  restartPolicyType = "on_failure"
+  restartPolicyMaxRetries = 5
+  
