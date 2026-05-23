@@ -1,0 +1,9 @@
+{
+    "start": {
+      "command": "cd bot && sh start.sh"
+    },
+    "build": {
+      "cmd": "cd bot && npm install --legacy-peer-deps"
+    }
+  }
+  
