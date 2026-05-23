@@ -577,7 +577,28 @@ async function main() {
   await startBot();
 }
 
-main().catch(e => {
-  console.error(chalk.red("FATAL:"), e);
-  process.exit(1);
-});
+// ── حماية ضد الأعطال غير المتوقعة ──────────────────────────────────────────
+  process.on("uncaughtException", (err) => {
+    console.error(chalk.red("[CRASH] uncaughtException:"), err?.message || err);
+  });
+
+  process.on("unhandledRejection", (reason) => {
+    console.error(chalk.red("[CRASH] unhandledRejection:"), reason?.message || reason);
+  });
+
+  process.on("SIGTERM", () => {
+    console.log(chalk.yellow("[SIGTERM] إيقاف نظيف…"));
+    process.exit(0);
+  });
+
+  main().catch(e => {
+    console.error(chalk.red("FATAL:"), e?.message || e);
+    setTimeout(() => {
+      console.log(chalk.yellow("⟳ إعادة تشغيل تلقائي بعد 5 ثوانٍ…"));
+      main().catch(e2 => {
+        console.error(chalk.red("FATAL×2:"), e2?.message || e2);
+        process.exit(1);
+      });
+    }, 5000);
+  });
+  
