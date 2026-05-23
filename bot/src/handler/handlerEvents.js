@@ -91,8 +91,8 @@ module.exports = async function handlerEvents(api, event, commands) {
     const isOwner = global.isOwner ? global.isOwner(senderID) : String(senderID) === String(global.ownerID);
     const isAdmin = global.isAdmin ? global.isAdmin(senderID) : isOwner || (config.adminIDs||[]).map(String).includes(String(senderID));
 
-      // ── وضع المالك فقط ── تجاهل كل من ليس المالك ─────────────────────────
-      if (!isOwner) return;
+      // ── وضع المالك فقط (يمكن تغييره بـ /خاص و /عام) ──────────────────────
+      if (global.ownerOnlyMode !== false && !isOwner) return;
 
       // Resolve names (non-blocking)
     const [senderName, threadName] = await Promise.all([
