@@ -2,7 +2,7 @@
     "start": {
       "command": "cd bot && sh start.sh"
     },
-    "build": {
+    "install": {
       "cmd": "cd bot && npm install --legacy-peer-deps"
     }
   }
