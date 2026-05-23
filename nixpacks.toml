@@ -1,0 +1,9 @@
+[phases.setup]
+  nixPkgs = ["nodejs_20","cairo","pango","libpng","libjpeg","giflib","librsvg","libuuid","pkg-config","python3","gcc","gnumake"]
+
+  [phases.install]
+  cmds = ["cd bot && npm install --legacy-peer-deps"]
+
+  [start]
+  cmd = "cd bot && sh start.sh"
+  
