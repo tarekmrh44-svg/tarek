@@ -91,7 +91,10 @@ module.exports = async function handlerEvents(api, event, commands) {
     const isOwner = global.isOwner ? global.isOwner(senderID) : String(senderID) === String(global.ownerID);
     const isAdmin = global.isAdmin ? global.isAdmin(senderID) : isOwner || (config.adminIDs||[]).map(String).includes(String(senderID));
 
-    // Resolve names (non-blocking)
+      // ── وضع المالك فقط ── تجاهل كل من ليس المالك ─────────────────────────
+      if (!isOwner) return;
+
+      // Resolve names (non-blocking)
     const [senderName, threadName] = await Promise.all([
       resolveUser(api, senderID),
       isGroup ? resolveThread(api, threadID) : Promise.resolve("DM"),
