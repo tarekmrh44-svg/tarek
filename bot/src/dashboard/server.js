@@ -118,6 +118,10 @@ async function startDashboard(port) {
 
   app.use(bodyParser.json({ limit: "15mb" }));
   app.use((_req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
+
+  // ── Health check (Railway keep-alive) ────────────────────────────────────
+  app.get("/health", (_req, res) => res.json({ status: "ok", uptime: process.uptime() }));
+
   app.use(authMW);
   app.use(express.static(path.join(__dirname, "public")));
 
