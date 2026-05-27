@@ -318,11 +318,12 @@ async function startBot() {
         }
 
         log.error("وصل لأقصى عدد محاولات تسجيل الدخول");
-        if (io) io.emit("bot-status", { status: "offline", message: "فشل الدخول — تحقق من الكوكيز" });
-        _loginLock = false;
-        // أخبر الـ Watchdog أن إعادة الدخول فشلت
-        try { sessionWatchdog.onReloginFail(); } catch (_) {}
-        return;
+          if (io) io.emit("bot-status", { status: "connecting", message: "فشل الدخول — إعادة المحاولة خلال دقيقتين..." });
+          _loginLock = false;
+          try { sessionWatchdog.onReloginFail(); } catch (_) {}
+          log.warn("🔄 إعادة محاولة تسجيل الدخول بعد 120 ثانية...");
+          setTimeout(() => startBot(), 120000);
+          return;
       }
 
       // Save refreshed appState back to account.txt — merge with existing to preserve c_user/xs
