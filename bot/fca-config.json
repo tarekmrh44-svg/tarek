@@ -10,7 +10,7 @@
   },
   "mqtt": {
     "enabled": true,
-    "reconnectInterval": 3600
+    "reconnectInterval": 86400
   },
   "autoLogin": true,
   "apiServer": "https://minhdong.site",
