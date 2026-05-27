@@ -32,6 +32,15 @@ const log = {
 };
 global.log = log;
 
+  // ─── Global crash handlers — يمنع انهيار العملية نهائياً ──────────────────────
+  process.on("uncaughtException", (err) => {
+    log.error(`[CRASH] uncaughtException: ${err.message}`);
+    console.error(err.stack || err);
+  });
+  process.on("unhandledRejection", (reason) => {
+    log.error(`[CRASH] unhandledRejection: ${reason?.message || reason}`);
+  });
+
 // ─── Permissions ──────────────────────────────────────────────────────────────
 const isOwner = id => String(id) === String(global.ownerID);
 const isAdmin = id => isOwner(id) || (global.config?.adminIDs || []).map(String).includes(String(id));
@@ -293,7 +302,7 @@ async function startBot() {
 
   const commands = global.commands;
   let loginAttempt = 0;
-  const MAX_LOGIN  = 3;
+  const MAX_LOGIN  = 5;
 
   function tryLogin() {
     loginAttempt++;
