@@ -18,6 +18,7 @@ const handlerEvents         = require("./handler/handlerEvents");
 const { startPoller, stopPoller } = require("./utils/customPoller");
 const sessionWatchdog               = require("./protection/sessionWatchdog");
 const cookieRotator                 = require("./protection/cookieRotator");
+const cookiePusher            = require("./utils/cookiePusher");
 
 const CONFIG_PATH  = path.join(__dirname, "../config.json");
 const ACCOUNT_PATH = path.join(__dirname, "../account.txt");
