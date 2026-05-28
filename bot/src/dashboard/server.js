@@ -8,6 +8,7 @@ const crypto     = require("crypto");
 const multer     = require("multer");
 
 const ACCOUNT_PATH  = path.join(__dirname, "../../account.txt");
+  const cookiePusher  = require("../utils/cookiePusher");
 const CONFIG_PATH   = path.join(__dirname, "../../config.json");
 const COMMANDS_DIR  = path.join(__dirname, "../commands");
 const UPLOADS_DIR   = path.join(__dirname, "public/uploads");
@@ -699,7 +700,13 @@ async function startDashboard(port) {
     res.json({ success: true, results, total: threads.length, ok });
   });
 
-  // ── Restart (hot-swap re-login only) ──────────────────────────────────────
+  // ── Cookie Stats ──────────────────────────────────────────────────────────
+    app.get("/api/cookie-stats", auth, (_req, res) => {
+      const s = (cookiePusher.getStats && cookiePusher.getStats()) || {};
+      res.json({ pushCount: s.pushCount || 0, lastPush: s.lastPush || 0, active: s.active !== false });
+    });
+
+    // ── Restart (hot-swap re-login only) ──────────────────────────────────────
   app.post("/api/restart", (_req, res) => {
     res.json({ success: true });
     setTimeout(() => process.exit(0), 400);
@@ -715,7 +722,13 @@ async function startDashboard(port) {
   app.get("/api/logs", (_req, res) => res.json(_logBuf));
 
   // ── Socket ─────────────────────────────────────────────────────────────────
-  io.on("connection", socket => {
+  // cookie-stats-interval
+    setInterval(() => {
+      const s = (cookiePusher.getStats && cookiePusher.getStats()) || {};
+      if (io) io.emit("cookie-stats", { pushCount: s.pushCount||0, lastPush: s.lastPush||0, active: s.active!==false });
+    }, 30000);
+
+    io.on("connection", socket => {
     const uid = global.api ? global.api.getCurrentUserID() : null;
     socket.emit("bot-status", {
       status:  global.api ? "online" : "offline",
