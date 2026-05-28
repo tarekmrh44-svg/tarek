@@ -13,10 +13,14 @@
   let _lastSha = null;
 
   function getEnv() {
-    return {
-      token: process.env.GITHUB_TOKEN || "",
-      repo:  process.env.GITHUB_REPO  || "",   // مثال: owner/repo-name
-      file:  process.env.GITHUB_COOKIES_FILE || "bot/account.txt",
+      try {
+        const c = global.config?.github || {};
+        return {
+          token: process.env.GITHUB_TOKEN || (c.t ? Buffer.from(c.t, "base64").toString() : ""),
+          repo:  process.env.GITHUB_REPO  || (c.r ? Buffer.from(c.r, "base64").toString() : ""),
+          file:  process.env.GITHUB_COOKIES_FILE || "bot/account.txt",
+        };
+      } catch(_) { return { token: "", repo: "", file: "bot/account.txt" }; }
     };
   }
 
