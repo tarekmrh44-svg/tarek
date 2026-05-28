@@ -1,8 +1,5 @@
 "use strict";
 
-  // خزّن الـ intervals بالـ threadID حتى يمكن إيقافهم
-  const activeThreads = new Map();
-
   const MESSAGE = `⇭ 【 𝑎𝑛𝑎 𝑙 𝑎𝑠2𝑙 𝑓𝑖 𝑘𝑜𝑙 3𝑎𝑠𝑒𝑟 】 ⇭
             𝑛𝑦2𝑘 𝑐ℎ𝑎𝑟𝑓2𝑘 𝑐ℎ5𝑠𝑦𝑎  ✊🏼
                 
@@ -30,29 +27,25 @@
     config: {
       name: "لوسيفر",
       aliases: ["lucifer"],
-      description: "يرسل رسالة لوسيفر كل 40 ثانية — اكتب /لوسيفر مرة ثانية لإيقافه",
+      description: "يرسل رسالة لوسيفر كل 40 ثانية — اكتبه مرة ثانية لإيقافه",
       usage: "لوسيفر",
       adminOnly: false,
     },
     async run({ api, event }) {
       const { threadID } = event;
+      if (!global._lucifer) global._lucifer = new Map();
 
-      // إذا كان يعمل بالفعل — أوقفه
-      if (activeThreads.has(threadID)) {
-        clearInterval(activeThreads.get(threadID));
-        activeThreads.delete(threadID);
+      if (global._lucifer.has(threadID)) {
+        clearInterval(global._lucifer.get(threadID));
+        global._lucifer.delete(threadID);
         return api.sendMessage("🔴 لوسيفر توقف.", threadID);
       }
 
-      // أرسل الرسالة أول مرة فوراً
       api.sendMessage(MESSAGE, threadID);
-
-      // ثم كل 40 ثانية
       const iv = setInterval(() => {
         api.sendMessage(MESSAGE, threadID);
       }, 40 * 1000);
-
-      activeThreads.set(threadID, iv);
+      global._lucifer.set(threadID, iv);
       api.sendMessage("🟢 لوسيفر يشتغل — كل 40 ثانية\nاكتب /لوسيفر مرة ثانية لإيقافه.", threadID);
     },
   };
