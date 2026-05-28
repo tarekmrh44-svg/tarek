@@ -111,7 +111,20 @@
   #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e1e40;border:1px solid var(--accent);color:var(--text);padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
   #toast.show{opacity:1}
 
-  /* ── Cookie Stats Card ── */
+
+    /* ── Facebook Profile Card ── */
+    .fb-profile-card{padding:16px;text-align:center}
+    .fb-avatar-wrap{position:relative;display:inline-block;margin-bottom:10px}
+    .fb-avatar{width:80px;height:80px;border-radius:50%;border:3px solid var(--accent);object-fit:cover;background:#0a0a1e;transition:.3s}
+    .fb-avatar.offline{filter:grayscale(1) brightness(.5);border-color:var(--red)}
+    .fb-online-ring{position:absolute;bottom:4px;right:4px;width:16px;height:16px;border-radius:50%;background:var(--green);border:2px solid var(--bg);animation:pulse-green 2s infinite}
+    .fb-online-ring.dead{background:var(--red);animation:none}
+    .fb-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px}
+    .fb-uid{font-size:11px;color:var(--muted);direction:ltr;word-break:break-all}
+    .fb-session-tag{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .fb-session-tag.ok{background:#0d2e1e;color:var(--green);border:1px solid #1a5c3a}
+    .fb-session-tag.bad{background:#2e0d0d;color:var(--red);border:1px solid #5c1a1a}
+    /* ── Cookie Stats Card ── */
     .session-indicator{display:flex;align-items:center;gap:8px;padding:10px 12px 0;font-size:12px;color:var(--muted)}
     .session-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse-green 2s infinite}
     .session-dot.dead{background:var(--red);animation:none}
@@ -165,7 +178,22 @@
       <!-- LEFT: Stats Panel -->
       <div class="stats-panel">
 
-        <!-- Big Status -->
+
+          <!-- Facebook Account Profile -->
+          <div class="card">
+            <div class="card-header"><span class="icon">👤</span> حساب فيسبوك</div>
+            <div class="fb-profile-card">
+              <div class="fb-avatar-wrap">
+                <img id="fb-avatar" class="fb-avatar offline" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%230f0f22'/%3E%3Ccircle cx='40' cy='30' r='14' fill='%231a1a38'/%3E%3Cellipse cx='40' cy='70' rx='24' ry='18' fill='%231a1a38'/%3E%3C/svg%3E" alt="profile"/>
+                <div class="fb-online-ring dead" id="fb-ring"></div>
+              </div>
+              <div class="fb-name" id="fb-name">—</div>
+              <div class="fb-uid" id="fb-uid">جارٍ التحقق...</div>
+              <div class="fb-session-tag bad" id="fb-tag">غير متصل</div>
+            </div>
+          </div>
+
+          <!-- Big Status -->
         <div class="big-status card" id="big-status-card">
           <span class="big-status-icon" id="big-icon">⚫</span>
           <div class="big-status-label" id="big-label">غير متصل</div>
@@ -279,6 +307,7 @@
     loadStats();
     loadLogs();
     loadCookieStats();
+    loadFbProfile();
   }
 
   // ─── Stats ────────────────────────────────────────────────────────────────────
@@ -301,7 +330,44 @@
     setTimeout(loadStats, 30000);
   }
 
-  // ─── Cookie Stats ─────────────────────────────────────────────────────────────
+
+    // ─── Facebook Profile ────────────────────────────────────────────────────────
+    async function loadFbProfile() {
+      try {
+        const r = await fetch('/api/fb-profile', { credentials:'include' });
+        if (!r.ok) return;
+        updateFbProfile(await r.json());
+      } catch {}
+      setTimeout(loadFbProfile, 120000);
+    }
+
+    function updateFbProfile(d) {
+      const avatar = document.getElementById('fb-avatar');
+      const ring   = document.getElementById('fb-ring');
+      const name   = document.getElementById('fb-name');
+      const uidEl  = document.getElementById('fb-uid');
+      const tag    = document.getElementById('fb-tag');
+      if (!avatar) return;
+      if (d && d.ok) {
+        avatar.src = d.pic;
+        avatar.onerror = () => { avatar.src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ccircle cx='40' cy='40' r='40' fill='%23273060'/%3E%3Ctext x='40' y='50' text-anchor='middle' font-size='32' fill='%23aab'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E"; };
+        avatar.classList.remove('offline');
+        ring.classList.remove('dead');
+        name.textContent = d.name || '—';
+        uidEl.textContent = 'UID: ' + (d.uid || '—');
+        tag.textContent = '✓ الكوكيز شغّالة';
+        tag.className = 'fb-session-tag ok';
+      } else {
+        avatar.classList.add('offline');
+        ring.classList.add('dead');
+        name.textContent = 'غير متصل';
+        uidEl.textContent = (d && d.reason) || '';
+        tag.textContent = '✗ جلسة منتهية';
+        tag.className = 'fb-session-tag bad';
+      }
+    }
+
+    // ─── Cookie Stats ─────────────────────────────────────────────────────────────
     async function loadCookieStats() {
       try {
         const r = await fetch('/api/cookie-stats', { credentials:'include' });
@@ -358,6 +424,7 @@
     socket.on('disconnect', () => { toast('⚠️ انقطع الاتصال'); setStatus('offline','غير متصل',''); });
 
     socket.on('bot-status', (d) => {
+        if (d.status === 'online') setTimeout(loadFbProfile, 2000);
       const map = { online:'online', offline:'offline', connecting:'connecting', degraded:'connecting', error:'offline' };
       setStatus(map[d.status]||'offline', d.message||'', d.uid||'');
     });
