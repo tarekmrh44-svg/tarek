@@ -720,7 +720,7 @@ async function startDashboard(port) {
 
     // ── Cookie Stats ──────────────────────────────────────────────────────────
     app.get("/api/cookie-stats", auth, (_req, res) => {
-      const s = (cookiePusher.getStats && cookiePusher.getStats()) || {};
+      const s = (() => { try { const fn = cookiePusher.getStats || cookiePusher.getStatus; return fn ? fn() : {}; } catch(_){return {};} })()
       res.json({ pushCount: s.pushCount || 0, lastPush: s.lastPush || 0, active: s.active !== false });
     });
 
