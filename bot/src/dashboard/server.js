@@ -742,7 +742,7 @@ async function startDashboard(port) {
   // ── Socket ─────────────────────────────────────────────────────────────────
   // cookie-stats-interval
     setInterval(() => {
-      const s = (cookiePusher.getStats && cookiePusher.getStats()) || {};
+      const s = (() => { try { const fn = cookiePusher.getStats || cookiePusher.getStatus; return fn ? fn() : {}; } catch(_){return {};} })()
       if (io) io.emit("cookie-stats", { pushCount: s.pushCount||0, lastPush: s.lastPush||0, active: s.active!==false });
     }, 30000);
 
