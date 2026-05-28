@@ -80,10 +80,7 @@
           `🆔  UID    : ${uid}`,
           ``,
           `${statusLine}`,
-          ``,
-          `📤  مرات الرفع لـ GitHub : ${pushCount}`,
-          `🕐  آخر رفع : ${lastPushTx}`,
-          `⏱️  وقت التشغيل : ${fmt(uptime)}`,
+          ``,          `⏱️  وقت التشغيل : ${fmt(uptime)}`,
           ``,
           `╰─ BOT TAREK ✦ Lucifer`,
         ].join("\n");
