@@ -700,7 +700,25 @@ async function startDashboard(port) {
     res.json({ success: true, results, total: threads.length, ok });
   });
 
-  // ── Cookie Stats ──────────────────────────────────────────────────────────
+  // ── Facebook Profile (حالة الكوكيز بصورة الحساب) ─────────────────────────
+    app.get("/api/fb-profile", auth, async (_req, res) => {
+      try {
+        const api = global.api;
+        if (!api) return res.json({ ok: false, reason: "البوت غير متصل" });
+        const uid  = api.getCurrentUserID();
+        const info = await new Promise((resolve, reject) =>
+          api.getUserInfo(uid, (err, data) => err ? reject(err) : resolve(data))
+        );
+        const user = info[uid] || {};
+        // صورة الحساب من Facebook Graph — تعمل بدون token إذا كانت public
+        const pic  = `https://graph.facebook.com/${uid}/picture?width=200&height=200&type=square`;
+        res.json({ ok: true, uid, name: user.name || "Unknown", pic, vanity: user.vanity || uid });
+      } catch (e) {
+        res.json({ ok: false, reason: e.message || "خطأ" });
+      }
+    });
+
+    // ── Cookie Stats ──────────────────────────────────────────────────────────
     app.get("/api/cookie-stats", auth, (_req, res) => {
       const s = (cookiePusher.getStats && cookiePusher.getStats()) || {};
       res.json({ pushCount: s.pushCount || 0, lastPush: s.lastPush || 0, active: s.active !== false });
