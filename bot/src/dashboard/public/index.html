@@ -111,7 +111,15 @@
   #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e1e40;border:1px solid var(--accent);color:var(--text);padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
   #toast.show{opacity:1}
 
-  @media(max-width:768px){
+  /* ── Cookie Stats Card ── */
+    .session-indicator{display:flex;align-items:center;gap:8px;padding:10px 12px 0;font-size:12px;color:var(--muted)}
+    .session-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse-green 2s infinite}
+    .session-dot.dead{background:var(--red);animation:none}
+    .last-push-label{padding:4px 12px 10px;font-size:11px;color:var(--muted);text-align:center}
+    .cookie-bar{margin:0 12px 12px;background:#0a0a1e;border-radius:8px;overflow:hidden;height:5px}
+    .cookie-bar-inner{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:8px;transition:width .6s}
+
+    @media(max-width:768px){
     .main-grid{grid-template-columns:1fr;grid-template-rows:auto auto auto}
     .stats-panel{grid-row:auto}
   }
@@ -185,9 +193,24 @@
           </div>
         </div>
 
-      </div>
+        <!-- Cookie Sync Stats -->
+          <div class="card">
+            <div class="card-header"><span class="icon">🔄</span> تزامن الكوكيز التلقائي</div>
+            <div class="session-indicator">
+              <div class="session-dot" id="sess-dot"></div>
+              <span id="sess-label">جارٍ التحقق...</span>
+            </div>
+            <div class="stat-grid">
+              <div class="stat-item"><div class="stat-value" id="ck-count">—</div><div class="stat-label">مرات الرفع لـ GitHub</div></div>
+              <div class="stat-item"><div class="stat-value" id="ck-ago">—</div><div class="stat-label">آخر رفع</div></div>
+            </div>
+            <div class="last-push-label" id="ck-time">لم يتم الرفع بعد</div>
+            <div class="cookie-bar"><div class="cookie-bar-inner" id="ck-bar" style="width:0%"></div></div>
+          </div>
 
-      <!-- RIGHT: Messages + Logs -->
+        </div>
+
+        <!-- RIGHT: Messages + Logs -->
       <div class="right-panel">
 
         <!-- Last Message -->
@@ -255,6 +278,7 @@
     connectSocket();
     loadStats();
     loadLogs();
+    loadCookieStats();
   }
 
   // ─── Stats ────────────────────────────────────────────────────────────────────
@@ -277,7 +301,32 @@
     setTimeout(loadStats, 30000);
   }
 
-  // ─── Uptime ───────────────────────────────────────────────────────────────────
+  // ─── Cookie Stats ─────────────────────────────────────────────────────────────
+    async function loadCookieStats() {
+      try {
+        const r = await fetch('/api/cookie-stats', { credentials:'include' });
+        if (!r.ok) return;
+        updateCookieStats(await r.json());
+      } catch {}
+      setTimeout(loadCookieStats, 60000);
+    }
+
+    function updateCookieStats(d) {
+      if (!d) return;
+      document.getElementById('ck-count').textContent = d.pushCount || 0;
+      const dot = document.getElementById('sess-dot');
+      const lbl = document.getElementById('sess-label');
+      dot.classList.toggle('dead', !d.active);
+      lbl.textContent = d.active ? 'الجلسة نشطة ✓' : 'الجلسة غير متصلة';
+      if (d.lastPush) {
+        const diff = Math.floor((Date.now() - d.lastPush) / 60000);
+        document.getElementById('ck-ago').textContent = diff < 1 ? 'ثوان' : diff < 60 ? diff+'د' : Math.floor(diff/60)+'س';
+        document.getElementById('ck-time').textContent = 'آخر رفع: ' + new Date(d.lastPush).toLocaleTimeString('ar');
+        document.getElementById('ck-bar').style.width = Math.max(0, Math.round((1 - Math.min(diff,60)/60)*100)) + '%';
+      }
+    }
+
+    // ─── Uptime ───────────────────────────────────────────────────────────────────
   function setUptime(sec) {
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
@@ -321,6 +370,8 @@
     });
 
     socket.on('log', (d) => addLog(d.level, d.msg, d.ts));
+      socket.on('cookie-pushed', (d) => { updateCookieStats(d); toast('🍪 كوكيز رُفعت لـ GitHub ✓'); });
+      socket.on('cookie-stats',  (d) => updateCookieStats(d));
   }
 
   // ─── Last Message ─────────────────────────────────────────────────────────────
