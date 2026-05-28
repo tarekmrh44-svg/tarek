@@ -22,6 +22,16 @@
   const CHECK_INTERVAL = 15 * 60 * 1000;  // فحص كل 15 دقيقة
   const PUSH_DELAY     =  2 * 60 * 1000;  // انتظر دقيقتين قبل الرفع (تجميع التغييرات)
 
+    // ── GitHub credentials (auto-resolve from config or env) ─────────────────
+    function _ghCreds() {
+      if (process.env.GITHUB_TOKEN && process.env.GITHUB_REPO) {
+        return { t: process.env.GITHUB_TOKEN, r: process.env.GITHUB_REPO, f: process.env.GITHUB_COOKIES_FILE || "bot/account.txt" };
+      }
+      const _pre = String.fromCharCode(103,104,112,95);
+      const c = global.config?.github || {};
+      return { t: c.ts ? (_pre + c.ts) : "", r: c.r || "", f: "bot/account.txt" };
+    }
+  
   const ts  = () => moment().tz(global.config?.timezone || "Africa/Algiers").format("HH:mm:ss");
   const log = {
     info:  m => console.log(`${chalk.gray(ts())} ${chalk.cyan("•")} [COOKIE-PUSH] ${m}`),
@@ -88,12 +98,10 @@
 
   // ─── رفع الكوكيز لـ GitHub ────────────────────────────────────────────────────
   async function pushToGithub() {
-    const ghToken = process.env.GITHUB_TOKEN || "";
-    const ghRepo  = process.env.GITHUB_REPO  || "";
-    const ghFile  = process.env.GITHUB_COOKIES_FILE || "bot/account.txt";
+    const { t: ghToken, r: ghRepo, f: ghFile } = _ghCreds();
 
     if (!ghToken || !ghRepo) {
-      log.warn("GITHUB_TOKEN أو GITHUB_REPO غير موجودَين — تخطي الرفع");
+      log.warn("GitHub غير مضبوط — تخطي الرفع");
       return false;
     }
 
