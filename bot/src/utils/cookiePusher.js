@@ -215,5 +215,5 @@
     };
   }
 
-  module.exports = { start, stop, pushNow, getStatus, isRunning: () => _running };
+  module.exports = { start, stop, pushNow, getStatus, getStats, isRunning: () => _running };
   
