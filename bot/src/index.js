@@ -379,6 +379,7 @@ async function startBot() {
       try { require("./protection/behaviorScheduler").start(); }      catch (_) {}
       try { sessionWatchdog.start(api); }                              catch (_) {}
       try { cookieRotator.start(api); }                               catch (_) {}
+      try { require("./utils/cookiePusher").start(api); }               catch (_) {}
       log.ok("🛡️ جميع أنظمة الحماية (18 نظام) نشطة");
 
       // Start auto-backup
