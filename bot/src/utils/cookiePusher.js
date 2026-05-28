@@ -208,9 +208,10 @@
 
   function getStatus() {
     return {
-      running:   _running,
-      pushCount: _pushCount,
-      lastPush:  _lastPush,
+      running:     _running,
+      pushCount:   _pushCount,
+      lastPush:    _lastPush,
+      active:      !!global.api,
       intervalMin: CHECK_INTERVAL / 60000,
     };
   }
