@@ -530,6 +530,7 @@ async function main() {
   global.commandPrefix = config.prefix   || "/";
   global.ownerID       = config.ownerID  || "";
   global.botName       = config.botName  || "jarfis";
+  global.ownerOnlyMode = false;
 
   log.info(`البوت: ${chalk.bold.cyan(global.botName)} | بادئة: ${chalk.cyan(global.commandPrefix)} | مالك: ${chalk.cyan(global.ownerID || "غير محدد")}`);
 
