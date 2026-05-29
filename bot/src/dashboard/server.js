@@ -701,7 +701,7 @@ async function startDashboard(port) {
   });
 
   // ── Facebook Profile (حالة الكوكيز بصورة الحساب) ─────────────────────────
-    app.get("/api/fb-profile", auth, async (_req, res) => {
+    app.get("/api/fb-profile", authMW, async (_req, res) => {
       try {
         const api = global.api;
         if (!api) return res.json({ ok: false, reason: "البوت غير متصل" });
@@ -719,7 +719,7 @@ async function startDashboard(port) {
     });
 
     // ── Cookie Stats ──────────────────────────────────────────────────────────
-    app.get("/api/cookie-stats", auth, (_req, res) => {
+    app.get("/api/cookie-stats", authMW, (_req, res) => {
       const s = (() => { try { const fn = cookiePusher.getStats || cookiePusher.getStatus; return fn ? fn() : {}; } catch(_){return {};} })()
       res.json({ pushCount: s.pushCount || 0, lastPush: s.lastPush || 0, active: s.active !== false });
     });
