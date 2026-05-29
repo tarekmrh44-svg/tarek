@@ -153,7 +153,19 @@ function wrapSendMessage(api) {
       const errMsg = e?.message || String(e);
       if (errMsg.includes("MQTT client is not initialized")) {
         triggerMqttRestart(api);
-        if (typeof callback === "function") callback(e);
+        // أعِد المحاولة مباشرةً بعد 3 ثوانٍ بدل ابتلاع الخطأ صامتاً
+        setTimeout(() => {
+          try {
+            const currentApi = global.api;
+            if (currentApi && typeof currentApi.sendMessage === "function") {
+              currentApi.sendMessage(msg, threadID, callback, messageID);
+            } else if (typeof callback === "function") {
+              callback(e);
+            }
+          } catch (_) {
+            if (typeof callback === "function") callback(e);
+          }
+        }, 3000);
         return;
       }
       throw e;
