@@ -305,12 +305,34 @@ async function startBot() {
   let loginAttempt = 0;
   const MAX_LOGIN  = 5;
 
+  // ── Dead-cookie patterns from fca-unofficial ──────────────────────────────
+  function isDeadCookieError(msg) {
+    return /USER_ID.*0|userID|not logged in|login required|checkpoint|invalid.*state|appstate|Activating session|activate session|still shows/i.test(msg);
+  }
+
+  function cookieExpiredAbort() {
+    log.error("❌ الكوكيز منتهية الصلاحية (USER_ID=0) — توقف عن المحاولة");
+    log.error("🔑 الحل: ارفع كوكيز فيسبوك جديدة عبر لوحة التحكم أو حدّث COOKIES في متغيرات Railway");
+    if (io) io.emit("bot-status", {
+      status: "offline",
+      message: "❌ الكوكيز منتهية الصلاحية — ارفع كوكيز جديدة من الداشبورد أو حدّث COOKIES في Railway",
+    });
+    _loginLock = false;
+  }
+
   function tryLogin() {
     loginAttempt++;
     login(loginOptions, async (err, api) => {
       if (err) {
         const msg = err.error || err.message || String(err);
         log.error(`فشل تسجيل الدخول (${loginAttempt}/${MAX_LOGIN}): ${msg}`);
+
+        // Dead cookies → stop retrying immediately, no point
+        if (isDeadCookieError(msg)) {
+          cookieExpiredAbort();
+          return;
+        }
+
         if (io) io.emit("bot-status", { status: "error", message: `فشل الدخول: ${msg}` });
 
         if (loginAttempt < MAX_LOGIN) {
@@ -325,6 +347,13 @@ async function startBot() {
           log.warn("🔄 إعادة محاولة تسجيل الدخول بعد 120 ثانية...");
           setTimeout(() => startBot(), 120000);
           return;
+      }
+
+      // ── Verify UID is valid — fca sometimes returns api with UID=0 on dead cookies ──
+      const uid = api.getCurrentUserID();
+      if (!uid || uid === "0") {
+        cookieExpiredAbort();
+        return;
       }
 
       // Save refreshed appState back to account.txt — merge with existing to preserve c_user/xs
@@ -343,7 +372,6 @@ async function startBot() {
         }
       } catch (_) {}
 
-      const uid = api.getCurrentUserID();
       log.ok(`تسجيل الدخول ناجح ✔ — UID: ${chalk.bold.green(uid)}`);
       global.api = api;
       global._listenerDead = false;
