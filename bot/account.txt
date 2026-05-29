@@ -5,8 +5,8 @@
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.853Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.226Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
     "expires": "2027-05-29T14:26:13.000Z"
@@ -17,8 +17,8 @@
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.858Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.230Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
     "expires": "2027-05-29T14:26:13.000Z"
@@ -29,8 +29,8 @@
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.858Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.230Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
     "expires": "2027-05-29T14:26:13.000Z"
@@ -41,8 +41,8 @@
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.859Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.230Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
     "expires": "2027-05-29T14:26:13.000Z"
@@ -53,8 +53,8 @@
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.859Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.230Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
     "expires": "2027-05-29T14:26:13.000Z"
@@ -65,8 +65,8 @@
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.859Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.230Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
     "expires": "2027-05-29T14:26:13.000Z"
@@ -77,35 +77,35 @@
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.859Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.231Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
-    "expires": "2027-05-29T16:09:20.000Z"
+    "expires": "2027-05-29T16:19:47.000Z"
   },
   {
     "key": "fr",
-    "value": "1WfjdKGK5XYmemcNF.AWfsgK8Rscq4jmpP8Nhs369wrp8N2gULKuVH69UmkmEqsPIzdpE.BqGbow..AAA.0.0.BqGbxh.AWendS-AOITB77HBrJnJHFZKyk0",
+    "value": "1TecHSpKnfFxI24Sl.AWfv8FUunKpxa-L94mNeCRFn7iBbqXA6fTBciKH1cEdsxqfix4g.BqGbyj..AAA.0.0.BqGb7e.AWfAkZz6j03WDzdzs3wWaIZU7vU",
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.859Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.231Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": true,
     "httpOnly": true,
-    "expires": "2026-08-27T16:18:41.000Z"
+    "expires": "2026-08-27T16:29:18.000Z"
   },
   {
     "key": "xs",
-    "value": "3%3A6aY6uO0n7dpX_Q%3A2%3A1780064605%3A-1%3A-1%3A%3AAczqVPKSdYO_0o6h6ylIAtYc0jSgFPbSA6iYhf9dLWQ",
+    "value": "3%3A6aY6uO0n7dpX_Q%3A2%3A1780064605%3A-1%3A-1%3A%3AAczJcDaDv04uV9hwnGTJ27tV4_kRR3n-1WxSJ1V08eI",
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.859Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.231Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
-    "expires": "2027-05-29T16:09:20.000Z"
+    "expires": "2027-05-29T16:19:47.000Z"
   },
   {
     "key": "presence",
@@ -113,8 +113,8 @@
     "domain": "facebook.com",
     "path": "/",
     "hostOnly": false,
-    "creation": "2026-05-29T16:08:58.860Z",
-    "lastAccessed": "2026-05-29T16:18:43.500Z",
+    "creation": "2026-05-29T16:19:36.231Z",
+    "lastAccessed": "2026-05-29T16:29:20.205Z",
     "secure": false,
     "httpOnly": false,
     "expires": "2027-05-29T14:26:13.000Z"
