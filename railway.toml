@@ -1,11 +1,15 @@
 [build]
-  builder = "dockerfile"
-  dockerfilePath = "Dockerfile"
+builder = "nixpacks"
+nixpacksConfigPath = "nixpacks.toml"
 
-  [deploy]
-  startCommand = "sh start.sh"
-  healthcheckPath = "/api/ping"
-  healthcheckTimeout = 60
-  restartPolicyType = "on_failure"
-  restartPolicyMaxRetries = 5
-  
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[[deploy.healthchecks]]
+type = "http"
+path = "/"
+port = 8080
+initialDelaySeconds = 15
+timeoutSeconds = 10
