@@ -97,11 +97,18 @@ async function doRefresh() {
       (html.includes("id=\"loginbutton\"") && !html.includes("logout"));
 
     if (expired) {
-      log("warn", `⚠️ انتهت الجلسة (${endpoint.label}) — إشعار المالك`);
+      log("warn", `⚠️ انتهت الجلسة (${endpoint.label}) — إعادة الاتصال تلقائياً`);
       try {
         const api = global.api;
         const owner = String(global.ownerID || "");
-        if (api && owner) api.sendMessage("⚠️ Session Refresher:\nانتهت الجلسة\nأعد رفع الكوكيز من الداشبورد", owner, () => {});
+        if (api && owner) api.sendMessage("⚠️ Session Refresher:\nانتهت الجلسة — جارٍ إعادة الاتصال تلقائياً 🔄", owner, () => {});
+      } catch (_) {}
+      // إعادة الاتصال تلقائياً بدلاً من الانتظار
+      try {
+        if (typeof global.reLoginBot === "function") {
+          global._lastMqttActivity = Date.now();
+          setTimeout(() => global.reLoginBot(), 3000);
+        }
       } catch (_) {}
     } else if (res.status >= 200 && res.status < 400) {
       _refreshCount++;
@@ -123,8 +130,8 @@ async function doRefresh() {
   } catch (_) {}
 
   const cfg = global.config?.sessionRefresher || {};
-  const minMin = cfg.minIntervalMinutes ?? 20;
-  const maxMin = cfg.maxIntervalMinutes ?? 50;
+  const minMin = cfg.minIntervalMinutes ?? 8;   // كل 8-20 دقيقة (أسرع)
+  const maxMin = cfg.maxIntervalMinutes ?? 20;
   addTimer(doRefresh, randMs(minMin, maxMin));
 }
 
