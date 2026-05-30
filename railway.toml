@@ -4,12 +4,5 @@ nixpacksConfigPath = "nixpacks.toml"
 
 [deploy]
 startCommand = "npm start"
-restartPolicyType = "on_failure"
-restartPolicyMaxRetries = 3
-
-[[deploy.healthchecks]]
-type = "http"
-path = "/"
-port = 8080
-initialDelaySeconds = 15
-timeoutSeconds = 10
+restartPolicyType = "always"
+restartPolicyMaxRetries = 10
