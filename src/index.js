@@ -510,6 +510,9 @@ async function main() {
     }, 5000);
   });
 
+  // Self-ping لمنع النوم
+  startSelfPing(port);
+
   // Start watchdog
   startWatchdog();
 
@@ -525,6 +528,20 @@ process.on("uncaughtException", (err) => {
 process.on("unhandledRejection", (reason) => {
   try { log.error(`unhandledRejection: ${reason?.message || reason}`); } catch (_) { console.error("unhandledRejection:", reason); }
 });
+
+// ─── Self-Ping: يمنع Replit / Railway من إيقاف العملية بسبب الخمول ───────────
+function startSelfPing(port) {
+  const http = require("http");
+  const INTERVAL = 4 * 60 * 1000; // كل 4 دقائق
+  setInterval(() => {
+    try {
+      http.get(`http://127.0.0.1:${port}/api/ping`, res => {
+        res.resume(); // استنزف الجسم
+      }).on("error", () => {});
+    } catch (_) {}
+  }, INTERVAL);
+  log.ok(`🔁 Self-Ping نشط — كل 4 دقائق على المنفذ ${port}`);
+}
 
 // ─── Watchdog: يعيد الاتصال إذا صمت البوت أكثر من 20 دقيقة ──────────────────
 function startWatchdog() {
