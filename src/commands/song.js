@@ -34,7 +34,7 @@ function fmtN(n) {
 
 async function downloadAudio(videoUrl, outPath) {
   try {
-    const ytdl = require("ytdl-core");
+    const ytdl = require("@distube/ytdl-core");
     if (ytdl.validateURL(videoUrl)) {
       await new Promise((res, rej) => {
         const stream = ytdl(videoUrl, { quality: "highestaudio", filter: "audioonly" });
