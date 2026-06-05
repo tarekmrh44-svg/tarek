@@ -124,6 +124,12 @@ function startPolling(api, attempt = 1) {
     if (err) {
       const msg = String(err.error || err.message || err);
       log.error("POLL", msg);
+      const isDead = msg.toLowerCase().includes("session") || msg.toLowerCase().includes("user_id") || msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("dead");
+      if (isDead) {
+        log.error("POLL", "🔴 جلسة منتهية — إعادة تسجيل الدخول خلال 10s…");
+        setTimeout(() => { try { global.startBot?.(); } catch(_) {} }, 10000);
+        return;
+      }
       if (attempt < MAX) setTimeout(() => startPolling(api, attempt + 1), attempt * 8000);
       else { log.warn("POLL", "→ Custom Poller"); startPoller(api, handlerEvents, config.pollIntervalMs || 6000); }
       return;

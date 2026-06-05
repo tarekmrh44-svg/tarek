@@ -1,6 +1,6 @@
 /**
- * DAVID V1 — /divel — رسائل دورية للغروب مع انتظار عشوائي
- * Copyright © 2025 DJAMEL
+ * /divel — رسائل دورية للغروب مع انتظار عشوائي
+ * Copyright © 2025
  */
 "use strict";
 const fs   = require("fs-extra");
@@ -11,17 +11,22 @@ function load() { try { if(fs.existsSync(DATA)) return JSON.parse(fs.readFileSyn
 function save(d) { fs.ensureDirSync(path.dirname(DATA)); fs.writeFileSync(DATA,JSON.stringify(d,null,2)); }
 function isAdmin(id) { return (global.GoatBot?.config?.adminBot||[]).map(String).includes(String(id)); }
 
-if (!global.GoatBot.divelWatchers) global.GoatBot.divelWatchers = {};
+// FIX: was top-level global.GoatBot.divelWatchers — crashes if GoatBot not ready
+function getWatchers() {
+  if (!global.GoatBot) return {};
+  if (!global.GoatBot.divelWatchers) global.GoatBot.divelWatchers = {};
+  return global.GoatBot.divelWatchers;
+}
 
 async function humanSend(api, tid, msg) {
   const delay = global.utils?.calcHumanTypingDelay?.(msg) || 1500;
   await global.utils?.simulateTyping?.(api, tid, delay);
-  await api.sendMessage({ body: msg, isDaydreamMode: true }, tid);
+  await api.sendMessage(msg, tid);
 }
 
 function scheduleNext(api, tid, td) {
-  if (global.GoatBot.divelWatchers[tid]?.timer)
-    clearTimeout(global.GoatBot.divelWatchers[tid].timer);
+  const wt = getWatchers();
+  if (wt[tid]?.timer) clearTimeout(wt[tid].timer);
   if (!td?.active || !td?.message) return;
   const minS = td.minSeconds ?? 300;
   const maxS = td.maxSeconds ?? minS;
@@ -30,12 +35,12 @@ function scheduleNext(api, tid, td) {
     try { await humanSend(api, tid, td.message); } catch(_) {}
     const d = load(); if (d[tid]?.active) scheduleNext(api, tid, d[tid]);
   }, ms);
-  global.GoatBot.divelWatchers[tid] = { ...td, timer };
+  getWatchers()[tid] = { ...td, timer };
 }
 
 function restoreAll(api) {
-  if (global.GoatBot._divelRestored) return;
-  global.GoatBot._divelRestored = true;
+  if (global.GoatBot?._divelRestored) return;
+  if (global.GoatBot) global.GoatBot._divelRestored = true;
   const data = load();
   for (const [tid, td] of Object.entries(data))
     if (td.active && td.message) scheduleNext(api, tid, td);
@@ -43,7 +48,7 @@ function restoreAll(api) {
 
 module.exports = {
   config: {
-    name: "divel", aliases: ["dv"], version: "2.0", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "divel", aliases: ["dv"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "management",
     description: "رسائل دورية للغروب مع انتظار عشوائي",
     guide: { en: "{pn} [رسالة] [min-max ثانية]\n{pn} off\n{pn} status" }
@@ -54,6 +59,7 @@ module.exports = {
     if (!isAdmin(event.senderID)) return message.reply("⛔ للأدمن فقط.");
     restoreAll(api);
     const data = load();
+    const wt   = getWatchers();
     const sub  = args[0]?.toLowerCase();
 
     if (!sub || sub === "status") {
@@ -63,17 +69,16 @@ module.exports = {
     }
 
     if (sub === "off") {
-      if (global.GoatBot.divelWatchers[tid]?.timer)
-        clearTimeout(global.GoatBot.divelWatchers[tid].timer);
-      delete global.GoatBot.divelWatchers[tid];
+      if (wt[tid]?.timer) clearTimeout(wt[tid].timer);
+      delete wt[tid];
       if (data[tid]) { data[tid].active = false; save(data); }
       return message.reply("✅ تم إيقاف Divel.");
     }
 
-    const nums  = args.filter(a => /^\d+$/.test(a));
-    const text  = args.filter(a => !/^\d+$/.test(a)).join(" ").trim() || data[tid]?.message || "👋";
-    const minS  = parseInt(nums[0]) || 300;
-    const maxS  = Math.max(parseInt(nums[1]) || minS, minS);
+    const nums = args.filter(a => /^\d+$/.test(a));
+    const text = args.filter(a => !/^\d+$/.test(a)).join(" ").trim() || data[tid]?.message || "👋";
+    const minS = parseInt(nums[0]) || 300;
+    const maxS = Math.max(parseInt(nums[1]) || minS, minS);
 
     data[tid] = { active: true, message: text, minSeconds: minS, maxSeconds: maxS };
     save(data);
