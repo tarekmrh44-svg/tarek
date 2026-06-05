@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Command Control (per-thread enable/disable)
+ * DAVID V1 — Command Control (per-thread enable/disable)
  * Copyright © 2025 DJAMEL
  */
 "use strict";

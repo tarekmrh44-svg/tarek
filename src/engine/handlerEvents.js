@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Unified Event Handler (WHITE-V3 + Jarfis merged)
+ * DAVID V1 — Unified Event Handler (WHITE-V3 + Jarfis merged)
  * Copyright © 2025 DJAMEL
  */
 "use strict";

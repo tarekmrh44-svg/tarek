@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Logger
+ * DAVID V1 — Logger
  * Copyright © 2025 DJAMEL
  */
 "use strict";

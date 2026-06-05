@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — /uptime — وقت تشغيل البوت مع إحصائيات
+ * DAVID V1 — /uptime — وقت تشغيل البوت مع إحصائيات
  * Copyright © 2025 DJAMEL
  */
 "use strict";
@@ -41,7 +41,7 @@ module.exports = {
     const pong = Date.now() - ping;
 
     const lines = [
-      `╔════ 𝐀𝐢𝐳𝐞𝐧 V1 — Status ════╗`,
+      `╔════ DAVID V1 — Status ════╗`,
       `║ 🤖 Bot ID: ${uid}`,
       `║ ⏱ Uptime: ${formatUptime(upMs)}`,
       `║ 🏓 Ping: ${pong}ms`,

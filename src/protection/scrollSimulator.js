@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — scrollSimulator Protection Layer
+ * DAVID V1 — scrollSimulator Protection Layer
  * Copyright © 2025 DJAMEL
  * Non-blocking stub — always safe, never crashes
  */

@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — SQLite Connection
+ * DAVID V1 — SQLite Connection
  * Copyright © DJAMEL
  */
 

@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — /angel — رسائل تلقائية للغروبات
+ * DAVID V1 — /angel — رسائل تلقائية للغروبات
  * Copyright © 2025 DJAMEL
  */
 "use strict";

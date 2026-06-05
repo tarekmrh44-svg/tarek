@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Stealth Engine (10 تمويه طبقة)
+ * DAVID V1 — Stealth Engine (10 تمويه طبقة)
  * Copyright © 2025 DJAMEL
  * Non-blocking: لا يسبب انهيار البوت أبداً
  */

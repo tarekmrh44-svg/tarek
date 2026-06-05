@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Core Globals (GoatBot Pattern)
+ * DAVID V1 — Core Globals (GoatBot Pattern)
  * Copyright © 2025 DJAMEL
  */
 "use strict";

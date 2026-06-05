@@ -1,6 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — /help — قائمة الأوامر بتصميم جميل
- * Copyright © 2025 DJAMEL
+ * /help — قائمة الأوامر
  */
 "use strict";
 
@@ -14,14 +13,14 @@ const COMMANDS_INFO = {
   song:     { icon: "🎵", desc: "البحث وتنزيل الأغاني من YouTube",     usage: "/song [اسم الأغنية]" },
   tiktok:   { icon: "🎬", desc: "تنزيل فيديو TikTok بدون علامة مائية",usage: "/tiktok [بحث أو رابط]" },
   uptime:   { icon: "⏱️", desc: "وقت تشغيل البوت مع الإحصائيات",      usage: "/uptime" },
+  ping:     { icon: "🏓", desc: "تحقق من استجابة البوت",               usage: "/ping" },
   help:     { icon: "❓", desc: "عرض قائمة الأوامر",                    usage: "/help [اسم الأمر]" },
 };
 
 function buildHelpAll(prefix) {
   const lines = [
     "╔════════════════════════════════════╗",
-    "║       🤖 𝐀𝐢𝐳𝐞𝐧 V1 — قائمة الأوامر       ║",
-    "║         By DJAMEL | دياميل         ║",
+    "║     🤖 𝐀𝐢𝐳𝐞𝐧 — قائمة الأوامر     ║",
     "╠════════════════════════════════════╣",
     `║  Prefix: ${prefix}                       ║`,
     "╠════════════════════════════════════╣",
@@ -83,12 +82,11 @@ function buildHelpOne(name, prefix) {
 
 module.exports = {
   config: {
-    name: "help", aliases: ["h","مساعدة","أوامر"], version: "2.0", author: "DJAMEL",
+    name: "help", aliases: ["h","مساعدة","أوامر"], version: "2.0", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "info",
     description: "عرض قائمة الأوامر بتصميم جميل",
     guide: { en: "{pn} — عرض كل الأوامر\n{pn} [اسم الأمر] — تفاصيل أمر" }
   },
-
   onStart: async function({ args, message, prefix }) {
     if (args[0]) {
       const name = args[0].toLowerCase().replace(/^\//, "");

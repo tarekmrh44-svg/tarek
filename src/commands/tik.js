@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — /tik — تنزيل فيديو TikTok بدون علامة مائية
+ * DAVID V1 — /tik — تنزيل فيديو TikTok بدون علامة مائية
  * Copyright © 2025 DJAMEL
  */
 "use strict";
@@ -96,7 +96,7 @@ module.exports = {
       if (waitMsg) api.unsendMessage(waitMsg.messageID).catch(()=>{});
 
       await api.sendMessage({
-        body: `🎵 ${(video.title||"").slice(0,100)}\n👁 ${fmtViews(video.play_count)} | ⏱ ${fmtDur(video.duration||0)}\n👑 𝐀𝐢𝐳𝐞𝐧 V1`,
+        body: `🎵 ${(video.title||"").slice(0,100)}\n👁 ${fmtViews(video.play_count)} | ⏱ ${fmtDur(video.duration||0)}\n👑 DAVID V1`,
         attachment: fs.createReadStream(outPath)
       }, event.threadID);
       fs.removeSync(outPath);
@@ -118,7 +118,7 @@ module.exports = {
       fs.writeFileSync(outPath, Buffer.from(res.data));
       api.unsendMessage(dlWait.messageID).catch(()=>{});
       await api.sendMessage({
-        body: `🎵 ${(data.title||"").slice(0,100)}\n👑 𝐀𝐢𝐳𝐞𝐧 V1`,
+        body: `🎵 ${(data.title||"").slice(0,100)}\n👑 DAVID V1`,
         attachment: fs.createReadStream(outPath)
       }, event.threadID);
       fs.removeSync(outPath);

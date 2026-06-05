@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — /song — البحث وتنزيل الأغاني من YouTube
+ * DAVID V1 — /song — البحث وتنزيل الأغاني من YouTube
  * Copyright © 2025 DJAMEL
  */
 "use strict";
@@ -103,7 +103,7 @@ module.exports = {
             api.unsendMessage(dlWait.messageID).catch(()=>{});
             if (ok) {
               await api.sendMessage({
-                body: `🎵 ${video.title}\n⏱ ${video.timestamp||"?"} | 👑 𝐀𝐢𝐳𝐞𝐧 V1`,
+                body: `🎵 ${video.title}\n⏱ ${video.timestamp||"?"} | 👑 DAVID V1`,
                 attachment: fs.createReadStream(outPath)
               }, re.threadID);
               fs.removeSync(outPath);

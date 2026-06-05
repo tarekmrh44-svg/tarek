@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Global Data Controller
+ * DAVID V1 — Global Data Controller
  * Copyright © DJAMEL
  */
 

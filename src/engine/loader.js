@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Command Loader (with hot-reload support)
+ * DAVID V1 — Command Loader (with hot-reload support)
  * Copyright © 2025 DJAMEL
  */
 "use strict";
@@ -16,7 +16,7 @@ function loadCommands(dir) {
   let loaded = 0, failed = 0;
 
   console.log();
-  console.log(`\x1b[36m  ─── 𝐀𝐢𝐳𝐞𝐧 — تحميل الأوامر (${files.length}) ───\x1b[0m`);
+  console.log(`\x1b[36m  ─── DAVID — تحميل الأوامر (${files.length}) ───\x1b[0m`);
 
   for (const file of files) {
     const absPath = path.resolve(absDir, file);

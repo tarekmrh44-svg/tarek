@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Database Init
+ * DAVID V1 — Database Init
  * Copyright © 2025 DJAMEL
  */
 "use strict";

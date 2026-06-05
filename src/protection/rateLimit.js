@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — Rate Limit (Layer 7+16+17)
+ * DAVID V1 — Rate Limit (Layer 7+16+17)
  * Copyright © 2025 DJAMEL
  * صمم ليكون مستقراً 100% — لا يسبب انهيار البوت
  */

@@ -1,5 +1,5 @@
 /**
- * 𝐀𝐢𝐳𝐞𝐧 V1 — connectionJitter Protection Layer
+ * DAVID V1 — connectionJitter Protection Layer
  * Copyright © 2025 DJAMEL
  * Non-blocking stub — always safe, never crashes
  */
