@@ -1,5 +1,5 @@
 /**
- * DAVID V1 — /chats — إدارة المحادثات والغروبات
+ * 𝐀𝐢𝐳𝐞𝐧 V1 — /chats — إدارة المحادثات والغروبات
  * Copyright © 2025 DJAMEL
  */
 "use strict";

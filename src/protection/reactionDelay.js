@@ -1,5 +1,5 @@
 /**
- * DAVID V1 — reactionDelay Protection Layer
+ * 𝐀𝐢𝐳𝐞𝐧 V1 — reactionDelay Protection Layer
  * Copyright © 2025 DJAMEL
  * Non-blocking stub — always safe, never crashes
  */

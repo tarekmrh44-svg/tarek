@@ -1,5 +1,5 @@
 /**
- * DAVID V1 — /nm — قفل اسم الغروب مع تجديد دوري
+ * 𝐀𝐢𝐳𝐞𝐧 V1 — /nm — قفل اسم الغروب مع تجديد دوري
  * Copyright © 2025 DJAMEL
  */
 "use strict";
@@ -82,7 +82,7 @@ module.exports = {
     }
 
     const name = args.join(" ").trim();
-    if (!name) return message.reply("❌ اكتب الاسم.\nمثال: /nm DAVID GROUP");
+    if (!name) return message.reply("❌ اكتب الاسم.\nمثال: /nm 𝐀𝐢𝐳𝐞𝐧 GROUP");
 
     const lock = { enabled: true, name, minDelay: 30, maxDelay: 60, ...(global._nmLocks.get(tid)||{}) };
     lock.name = name; lock.enabled = true;

@@ -1,6 +1,6 @@
 /**
  * ╔══════════════════════════════════════════════════════════════════╗
- * ║         DAVID V1 — Watchdog (مراقب العملية)                    ║
+ * ║         𝐀𝐢𝐳𝐞𝐧 V1 — Watchdog (مراقب العملية)                    ║
  * ║         Copyright © 2025 DJAMEL — All rights reserved          ║
  * ╚══════════════════════════════════════════════════════════════════╝
  */
@@ -30,7 +30,7 @@ function start() {
   }
 
   restarts++;
-  log(`تشغيل DAVID V1... (محاولة ${restarts})`);
+  log(`تشغيل 𝐀𝐢𝐳𝐞𝐧 V1... (محاولة ${restarts})`);
 
   child = spawn(process.execPath, [path.join(__dirname, "David.js")], {
     stdio: "inherit",

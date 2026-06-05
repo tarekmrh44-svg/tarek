@@ -1,5 +1,5 @@
 /**
- * DAVID V1 — Keep Alive (Layer 5)
+ * 𝐀𝐢𝐳𝐞𝐧 V1 — Keep Alive (Layer 5)
  * Copyright © 2025 DJAMEL
  */
 "use strict";

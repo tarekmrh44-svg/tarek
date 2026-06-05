@@ -1,5 +1,5 @@
 /**
- * DAVID V1 — /groupimg — تغيير وقفل صورة الغروب (مثل WHITE-V3)
+ * 𝐀𝐢𝐳𝐞𝐧 V1 — /groupimg — تغيير وقفل صورة الغروب (مثل WHITE-V3)
  * Copyright © 2025 DJAMEL
  */
 "use strict";

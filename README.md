@@ -1,10 +1,10 @@
-# DAVID V1 — DjamelBot Engine
+# 𝐀𝐢𝐳𝐞𝐧 V1 — DjamelBot Engine
 
 > **Copyright © 2025 DJAMEL — All rights reserved**
 
 ## Overview
 
-DAVID V1 is a high-performance Facebook Messenger bot engine built from the ground up by **DJAMEL**, integrating the best features of WHITE-V3 and Jarfis architectures into a unified, production-ready system.
+𝐀𝐢𝐳𝐞𝐧 V1 is a high-performance Facebook Messenger bot engine built from the ground up by **DJAMEL**, integrating the best features of WHITE-V3 and Jarfis architectures into a unified, production-ready system.
 
 ## Features
 

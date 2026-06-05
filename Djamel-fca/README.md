@@ -1,10 +1,10 @@
 # Djamel-fca
 
-> مكاتب البوت — Facebook Client Abstractions for DAVID V1
+> مكاتب البوت — Facebook Client Abstractions for 𝐀𝐢𝐳𝐞𝐧 V1
 
 **Copyright © DJAMEL — All rights reserved.**
 
-A high-level abstraction library over `fca-eryxenx` (Facebook Client API) built for the **DAVID V1** Messenger Bot.
+A high-level abstraction library over `fca-eryxenx` (Facebook Client API) built for the **𝐀𝐢𝐳𝐞𝐧 V1** Messenger Bot.
 
 ---
 
@@ -46,7 +46,7 @@ await queue.enqueue(() => api.sendMessage("msg 2", tid));
 
 ## About
 
-This library is part of the **DAVID V1** bot project by **DJAMEL**.
+This library is part of the **𝐀𝐢𝐳𝐞𝐧 V1** bot project by **DJAMEL**.
 
 - Author: **DJAMEL**
 - Version: 1.0.0

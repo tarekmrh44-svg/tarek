@@ -1,5 +1,5 @@
 /**
- * DAVID V1 — Custom HTTP Poller (fallback for MQTT)
+ * 𝐀𝐢𝐳𝐞𝐧 V1 — Custom HTTP Poller (fallback for MQTT)
  * Copyright © 2025 DJAMEL
  */
 "use strict";

@@ -1,5 +1,5 @@
 /**
- * DAVID V1 — Dashboard Server (Express + Socket.io)
+ * 𝐀𝐢𝐳𝐞𝐧 V1 — Dashboard Server (Express + Socket.io)
  * Copyright © 2025 DJAMEL
  * Features: Password auth, Live logs, Hot-reload config, Command editor
  */
@@ -95,7 +95,7 @@ function getStats() {
     activeUsers:   stats.activeUsers.size,
     commands:      global.GoatBot?.commands?.size || 0,
     botID:         global.GoatBot?.botID  || null,
-    botName:       global.GoatBot?.config?.botName || "DAVID V1",
+    botName:       global.GoatBot?.config?.botName || "𝐀𝐢𝐳𝐞𝐧 V1",
     memMB:         +(mem.heapUsed / 1048576).toFixed(1),
     prefix:        global.GoatBot?.config?.prefix || "/",
     protection:    20,
@@ -141,7 +141,7 @@ function startDashboard(port = 5000) {
   app.get("/api/stats",  auth, (_, res) => res.json(getStats()));
   app.get("/api/status", auth, (_, res) => {
     const online = !!global.GoatBot?.fcaApi && !!global.GoatBot?.botID;
-    res.json({ ok: true, online, botID: global.GoatBot?.botID || null, botName: global.GoatBot?.config?.botName || "DAVID V1" });
+    res.json({ ok: true, online, botID: global.GoatBot?.botID || null, botName: global.GoatBot?.config?.botName || "𝐀𝐢𝐳𝐞𝐧 V1" });
   });
 
   // ── Config ──────────────────────────────────────────────────────────────────
@@ -370,7 +370,7 @@ function startDashboard(port = 5000) {
     socket.emit("bot-status", {
       status:  global.GoatBot?.fcaApi ? "online" : "offline",
       uid:     global.GoatBot?.botID  || null,
-      botName: global.GoatBot?.config?.botName || "DAVID V1",
+      botName: global.GoatBot?.config?.botName || "𝐀𝐢𝐳𝐞𝐧 V1",
     });
     // Send last 100 log lines
     socket.emit("log-history", _logBuf.slice(-100));

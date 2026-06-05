@@ -1,7 +1,7 @@
 {
   "name": "david-v1",
   "version": "2.0.0",
-  "description": "DAVID V1 — DjamelBot Engine | Copyright © 2025 DJAMEL",
+  "description": "𝐀𝐢𝐳𝐞𝐧 V1 — DjamelBot Engine | Copyright © 2025 DJAMEL",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -29,7 +29,7 @@
     "facebook",
     "messenger",
     "bot",
-    "DAVID",
+    "𝐀𝐢𝐳𝐞𝐧",
     "DJAMEL",
     "chatbot"
   ]

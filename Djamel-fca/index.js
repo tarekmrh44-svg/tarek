@@ -2,7 +2,7 @@
  * ╔══════════════════════════════════════════════════════════════════════╗
  * ║       DJAMEL-FCA v3.0 — Facebook Client Abstractions               ║
  * ║       Copyright © 2025 DJAMEL — All rights reserved               ║
- * ║       Built exclusively for DAVID V1 Bot Engine                    ║
+ * ║       Built exclusively for 𝐀𝐢𝐳𝐞𝐧 V1 Bot Engine                    ║
  * ╚══════════════════════════════════════════════════════════════════════╝
  *
  * Features:
