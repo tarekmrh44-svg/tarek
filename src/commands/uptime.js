@@ -21,7 +21,7 @@ function formatUptime(ms) {
 
 module.exports = {
   config: {
-    name: "uptime", aliases: ["up","ping","وقت"], version: "2.0", author: "DJAMEL",
+    name: "uptime", aliases: ["up","ping","وقت"], version: "2.0", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 5, role: 2, category: "info",
     description: "عرض وقت تشغيل البوت مع الإحصائيات",
     guide: { en: "{pn} — عرض الإحصائيات" }
@@ -50,7 +50,7 @@ module.exports = {
       `║ 💻 System RAM: ${((sysM.total-sysM.free)/1073741824).toFixed(2)}/${(sysM.total/1073741824).toFixed(2)} GB`,
       `║ 🛡 Protection: 20 طبقة نشطة`,
       `║ 🔑 Prefix: ${prefix}`,
-      `║ 👑 By: DJAMEL`,
+      `║ 👑 By: 𝐀𝐢𝐳𝐞𝐧`,
       `╚══════════════════════════╝`
     ];
 

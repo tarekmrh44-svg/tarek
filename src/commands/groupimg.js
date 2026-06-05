@@ -42,7 +42,7 @@ module.exports = {
     name: "groupimg",
     aliases: ["gcimg", "صورة", "img"],
     version: "3.0",
-    author: "DJAMEL",
+    author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 5,
     role: 2,
     category: "management",

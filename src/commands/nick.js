@@ -62,7 +62,7 @@ if (!global._nickCurrentName) global._nickCurrentName = {};
 
 module.exports = {
   config: {
-    name: "nick", aliases: ["كنيات","nickname"], version: "4.0", author: "DJAMEL",
+    name: "nick", aliases: ["كنيات","nickname"], version: "4.0", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "management",
     description: "تغيير كنية جميع الأعضاء باستمرار",
     guide: { en: "{pn} [اسم] — تفعيل\n{pn} off — إيقاف\n{pn} status — الحالة\n{pn} حدف — حذف كل الكنيات" }
@@ -97,7 +97,7 @@ module.exports = {
     }
 
     const name = args.join(" ").trim();
-    if (!name) return message.reply("❌ اكتب الاسم المراد تعيينه.\nمثال: /nick DJAMEL");
+    if (!name) return message.reply("❌ اكتب الاسم المراد تعيينه.\nمثال: /nick 𝐀𝐢𝐳𝐞𝐧");
 
     // إذا كانت تعمل بالفعل، غيّر الإصدار فقط (تحديث فوري)
     if (global._nickRunning[tid]) {

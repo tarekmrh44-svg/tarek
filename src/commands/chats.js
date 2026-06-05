@@ -20,7 +20,7 @@ function setDmLocked(v) {
 
 module.exports = {
   config: {
-    name: "chats", aliases: ["محادثات","chat"], version: "2.0", author: "DJAMEL",
+    name: "chats", aliases: ["محادثات","chat"], version: "2.0", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "management",
     description: "إدارة المحادثات والغروبات",
     guide: { en: "{pn} list — قائمة الغروبات\n{pn} dm on/off — قفل/فك DM\n{pn} angel — حالة Angel\n{pn} count" }

@@ -88,7 +88,7 @@ function printBanner() {
 ╚═════╝ ╚═╝  ╚═╝  ╚═══╝  ╚═╝╚═════╝       ╚═══╝   ╚═╝`;
   console.log(gradient.pastel(art));
   console.log(chalk.hex("#00b4d8")("  ═".repeat(30)));
-  console.log(chalk.hex("#ffd166")(`  Developer  : DJAMEL`));
+  console.log(chalk.hex("#ffd166")(`  Developer  : 𝐀𝐢𝐳𝐞𝐧`));
   console.log(chalk.hex("#06d6a0")(`  Engine     : DAVID v2.0`));
   console.log(chalk.hex("#90e0ef")(`  Library    : Djamel-fca v3.0`));
   console.log(chalk.hex("#ff6b6b")(`  Framework  : WHITE V3 + Jarfis Merged`));
@@ -315,7 +315,7 @@ async function startBot() {
       console.log(`  │  ${chalk.yellow("Commands:")} ${chalk.white(String(global.GoatBot.commands.size).padEnd(35))}│`);
       console.log(`  │  ${chalk.yellow("Engine:")}   ${chalk.white("DAVID v2 — 20 Protection Layers".padEnd(35))}│`);
       console.log(`  │  ${chalk.yellow("Port:")}     ${chalk.white(String(PORT).padEnd(35))}│`);
-      console.log(`  │  ${chalk.yellow("By:")}       ${chalk.white("DJAMEL".padEnd(35))}│`);
+      console.log(`  │  ${chalk.yellow("By:")}       ${chalk.white("𝐀𝐢𝐳𝐞𝐧".padEnd(35))}│`);
       console.log(chalk.hex("#00b4d8")("  └──────────────────────────────────────────┘"));
       console.log();
 
