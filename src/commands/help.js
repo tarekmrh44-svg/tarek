@@ -1,5 +1,6 @@
 /**
  * /help — قائمة الأوامر
+ * Copyright © 2025
  */
 "use strict";
 
@@ -25,29 +26,23 @@ function buildHelpAll(prefix) {
     `║  Prefix: ${prefix}                       ║`,
     "╠════════════════════════════════════╣",
   ];
-
   const allCmds = global.GoatBot?.commands;
   const seen    = new Set();
-
   if (allCmds?.size) {
     for (const [, cmd] of allCmds) {
       const name = cmd.config?.name;
       if (!name || seen.has(name)) continue;
       seen.add(name);
       const info = COMMANDS_INFO[name] || {};
-      const icon = info.icon || "•";
-      const desc = (cmd.config?.description || info.desc || "").slice(0, 35);
-      lines.push(`║ ${icon} ${prefix}${name.padEnd(10)} — ${desc}`);
+      const desc = (cmd.config?.description || info.desc || "").slice(0, 30);
+      lines.push(`║ ${info.icon||"•"} ${prefix}${name.padEnd(10)} — ${desc}`);
     }
   } else {
-    for (const [name, info] of Object.entries(COMMANDS_INFO)) {
+    for (const [name, info] of Object.entries(COMMANDS_INFO))
       lines.push(`║ ${info.icon} ${prefix}${name.padEnd(10)} — ${info.desc}`);
-    }
   }
-
   lines.push("╠════════════════════════════════════╣");
-  lines.push(`║  📦 الإجمالي: ${seen.size || Object.keys(COMMANDS_INFO).length} أمر          ║`);
-  lines.push(`║  🛡 الحماية: 20 طبقة نشطة          ║`);
+  lines.push(`║  📦 الإجمالي: ${seen.size || Object.keys(COMMANDS_INFO).length} أوامر              ║`);
   lines.push("╠════════════════════════════════════╣");
   lines.push("║  /help [اسم الأمر] للتفاصيل        ║");
   lines.push("╚════════════════════════════════════╝");
@@ -58,22 +53,20 @@ function buildHelpOne(name, prefix) {
   const allCmds = global.GoatBot?.commands;
   const cmd     = allCmds?.get(name.toLowerCase());
   const info    = COMMANDS_INFO[name.toLowerCase()] || {};
-  const icon    = info.icon || "•";
-
   const config  = cmd?.config || {};
-  const desc    = config.description || config.longDescription || info.desc || "لا يوجد وصف";
+  const desc    = config.description || info.desc || "لا يوجد وصف";
   const usage   = config.guide?.en?.replace(/\{p[n]?\}/g, prefix) || info.usage || `${prefix}${name}`;
   const aliases = (config.aliases || []).filter(Boolean);
   const cat     = config.category || "admin";
-  const role    = config.role === 3 ? "👑 Owner" : config.role === 2 ? "🔑 Admin" : "👤 User";
-
+  const roleN   = config.role ?? 2;
+  const roleT   = roleN >= 3 ? "👑 Owner" : roleN >= 2 ? "🔑 Admin" : "👤 الجميع";
   const lines = [
-    `╔══ ${icon} ${prefix}${name.toUpperCase()} ════════════════════╗`,
+    `╔══ ${info.icon||"•"} ${prefix}${name.toUpperCase()} ════════════════════╗`,
     `║ 📝 ${desc}`,
     `║ 📌 الاستخدام:`,
     ...usage.split("\n").map(l => `║    ${l}`),
     `║ 🏷 الفئة: ${cat}`,
-    `║ 🔑 الصلاحية: ${role}`,
+    `║ 🔑 الصلاحية: ${roleT}`,
   ];
   if (aliases.length) lines.push(`║ 🔀 اختصارات: ${aliases.join(", ")}`);
   lines.push("╚════════════════════════════════════╝");
@@ -82,8 +75,10 @@ function buildHelpOne(name, prefix) {
 
 module.exports = {
   config: {
-    name: "help", aliases: ["h","مساعدة","أوامر"], version: "2.0", author: "𝐀𝐢𝐳𝐞𝐧",
-    countDown: 3, role: 2, category: "info",
+    name: "help", aliases: ["h","مساعدة","أوامر"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
+    countDown: 3,
+    role: 0,   // FIX: was role:2 (admin only) — now role:0 so everyone can see commands
+    category: "info",
     description: "عرض قائمة الأوامر بتصميم جميل",
     guide: { en: "{pn} — عرض كل الأوامر\n{pn} [اسم الأمر] — تفاصيل أمر" }
   },

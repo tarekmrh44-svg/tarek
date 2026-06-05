@@ -124,10 +124,11 @@ function startPolling(api, attempt = 1) {
     if (err) {
       const msg = String(err.error || err.message || err);
       log.error("POLL", msg);
-      const isDead = msg.toLowerCase().includes("session") || msg.toLowerCase().includes("user_id") || msg.toLowerCase().includes("invalid") || msg.toLowerCase().includes("dead");
+      const isDead = /session|user_id|invalid|dead|logout/i.test(msg);
       if (isDead) {
-        log.error("POLL", "🔴 جلسة منتهية — إعادة تسجيل الدخول خلال 10s…");
-        setTimeout(() => { try { global.startBot?.(); } catch(_) {} }, 10000);
+        log.error("POLL", "🔴 جلسة منتهية — حذف الكوكيز وإعادة التسجيل…");
+        clearExpiredCookies();
+        setTimeout(() => { try { global.startBot?.(); } catch(_) {} }, 8000);
         return;
       }
       if (attempt < MAX) setTimeout(() => startPolling(api, attempt + 1), attempt * 8000);
@@ -222,6 +223,17 @@ function stopProtection() {
   }
 }
 
+// ─── Clear expired cached cookies so FB_COOKIES env var is used on next login ──
+function clearExpiredCookies() {
+  try {
+    global._selfWrite = true;
+    const ACCOUNT_PATH_LOCAL = require("path").join(__dirname, "account.txt");
+    require("fs-extra").writeFileSync(ACCOUNT_PATH_LOCAL, "", "utf8");
+    setTimeout(() => { global._selfWrite = false; }, 5000);
+    require("./src/engine/logger").info("LOGIN", "🧹 تم حذف الكوكيز المنتهية — سيتم استخدام FB_COOKIES");
+  } catch (_) {}
+}
+
 // ─── Login lock ──────────────────────────────────────────────────────────────────
 let _loginLock = false;
 
@@ -267,9 +279,26 @@ async function startBot() {
 
   const UA = config.facebookAccount?.userAgent || getUA();
   log.info("LOGIN", "التحقق من صلاحية الكوكيز…");
-  const valid = await checkLiveCookie(cookiesToString(cookies), UA);
+  let valid = await checkLiveCookie(cookiesToString(cookies), UA);
   if (valid) log.ok("LOGIN", "الكوكيز صالحة ✔");
-  else log.warn("LOGIN", "تحذير: التحقق من mbasic فشل — سنحاول رغم ذلك");
+  else {
+    log.warn("LOGIN", "تحذير: الكوكيز المخزنة منتهية — نحاول FB_COOKIES env var…");
+    // FIX: try fresh cookies from env var if cached ones are expired
+    if (process.env.FB_COOKIES) {
+      const freshRaw = process.env.FB_COOKIES.trim();
+      const freshParsed = parseCookieInput(freshRaw);
+      if (freshParsed.cookies.length && hasMandatory(freshParsed.cookies)) {
+        const freshValid = await checkLiveCookie(cookiesToString(freshParsed.cookies), UA);
+        if (freshValid) {
+          log.ok("LOGIN", "✔ FB_COOKIES صالحة — استخدام الكوكيز الجديدة");
+          cookies.length = 0;
+          freshParsed.cookies.forEach(c => cookies.push(c));
+          valid = true;
+        }
+      }
+    }
+    if (!valid) log.warn("LOGIN", "سنحاول رغم ذلك…");
+  }
 
   let attempt = 0;
   const MAX_ATTEMPTS = 3;

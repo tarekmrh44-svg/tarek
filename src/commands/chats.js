@@ -1,6 +1,6 @@
 /**
- * DAVID V1 — /chats — إدارة المحادثات والغروبات
- * Copyright © 2025 DJAMEL
+ * /chats — إدارة المحادثات والغروبات
+ * Copyright © 2025
  */
 "use strict";
 const fs   = require("fs-extra");
@@ -8,19 +8,27 @@ const path = require("path");
 const DM_DATA = path.join(process.cwd(), "database/data/dmLock.json");
 
 function isAdmin(id) { return (global.GoatBot?.config?.adminBot||[]).map(String).includes(String(id)); }
+
+// FIX: use optional chaining throughout
 function getDmLocked() {
-  if (global.GoatBot.dmLocked !== undefined) return !!global.GoatBot.dmLocked;
-  try { if(fs.existsSync(DM_DATA)) { const d=JSON.parse(fs.readFileSync(DM_DATA,"utf8")); global.GoatBot.dmLocked=!!d.locked; return global.GoatBot.dmLocked; } } catch(_) {}
+  if (global.GoatBot?.dmLocked !== undefined) return !!global.GoatBot.dmLocked;
+  try {
+    if (fs.existsSync(DM_DATA)) {
+      const d = JSON.parse(fs.readFileSync(DM_DATA,"utf8"));
+      if (global.GoatBot) global.GoatBot.dmLocked = !!d.locked;
+      return !!d.locked;
+    }
+  } catch(_) {}
   return false;
 }
 function setDmLocked(v) {
-  global.GoatBot.dmLocked = !!v;
+  if (global.GoatBot) global.GoatBot.dmLocked = !!v;
   try { fs.ensureDirSync(path.dirname(DM_DATA)); fs.writeFileSync(DM_DATA,JSON.stringify({locked:!!v},null,2)); } catch(_) {}
 }
 
 module.exports = {
   config: {
-    name: "chats", aliases: ["محادثات","chat"], version: "2.0", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "chats", aliases: ["محادثات","chat"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "management",
     description: "إدارة المحادثات والغروبات",
     guide: { en: "{pn} list — قائمة الغروبات\n{pn} dm on/off — قفل/فك DM\n{pn} angel — حالة Angel\n{pn} count" }
@@ -33,22 +41,22 @@ module.exports = {
     if (!sub || sub === "count") {
       try {
         const threads = await new Promise((res,rej) => api.getThreadList(15,null,["INBOX"],(e,d)=>e?rej(e):res(d)));
-        const groups = (threads||[]).filter(t => t.isGroup);
-        const dms    = (threads||[]).filter(t => !t.isGroup);
-        let msg = `📊 إحصائيات المحادثات\n`;
-        msg += `━━━━━━━━━━━━━━━━━\n`;
-        msg += `👥 غروبات: ${groups.length}\n`;
-        msg += `💬 محادثات خاصة: ${dms.length}\n`;
-        msg += `🔒 DM Lock: ${getDmLocked() ? "مفعل" : "معطل"}\n`;
-        msg += `🤖 Angel: ${Object.keys(global.GoatBot.angelIntervals||{}).length} غروب نشط`;
-        return message.reply(msg);
+        const groups  = (threads||[]).filter(t => t.isGroup);
+        const dms     = (threads||[]).filter(t => !t.isGroup);
+        return message.reply(
+          `📊 إحصائيات المحادثات\n━━━━━━━━━━━━━━━━━\n` +
+          `👥 غروبات: ${groups.length}\n` +
+          `💬 محادثات خاصة: ${dms.length}\n` +
+          `🔒 DM Lock: ${getDmLocked() ? "مفعل" : "معطل"}\n` +
+          `🤖 Angel: ${Object.keys(global.GoatBot?.angelIntervals||{}).length} غروب نشط`
+        );
       } catch(e) { return message.reply("❌ " + e.message); }
     }
 
     if (sub === "list") {
       try {
         const threads = await new Promise((res,rej) => api.getThreadList(20,null,["INBOX"],(e,d)=>e?rej(e):res(d)));
-        const groups = (threads||[]).filter(t => t.isGroup).slice(0, 10);
+        const groups  = (threads||[]).filter(t => t.isGroup).slice(0, 10);
         if (!groups.length) return message.reply("لا توجد غروبات.");
         let msg = "📋 قائمة الغروبات:\n━━━━━━━━━━━━━━━━━\n";
         groups.forEach((g,i) => { msg += `${i+1}. ${g.name||"بلا اسم"}\n   ID: ${g.threadID}\n`; });
@@ -64,7 +72,7 @@ module.exports = {
     }
 
     if (sub === "angel") {
-      const active = Object.keys(global.GoatBot.angelIntervals||{});
+      const active = Object.keys(global.GoatBot?.angelIntervals||{});
       if (!active.length) return message.reply("💤 Angel غير مفعل في أي غروب.");
       return message.reply(`🔔 Angel نشط في ${active.length} غروب:\n${active.map((t,i)=>`${i+1}. ${t}`).join("\n")}`);
     }

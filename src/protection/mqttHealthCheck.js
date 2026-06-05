@@ -1,6 +1,6 @@
 /**
  * DAVID V1 — MQTT Health Check (Layer 6)
- * Copyright © 2025 DJAMEL
+ * Copyright © 2025
  */
 "use strict";
 let _t = null, _count = 0;
@@ -14,21 +14,26 @@ const getCfg = () => {
 function markActivity() { global.lastMqttActivity = Date.now(); }
 async function doCheck() {
   const cfg = getCfg();
-  if (!cfg.enable || global.GoatBot?.fcaApi === null) return;
+  if (!cfg.enable || !global.GoatBot?.fcaApi) return;
   const last   = global.lastMqttActivity || global.GoatBot?.startTime || Date.now();
   const silent = Date.now() - last;
   if (silent < cfg.silentMs) { _count = 0; return; }
   if (_count >= cfg.maxR) return;
   _count++;
   global.log?.warn?.("MQTT_HEALTH", `صمت ${Math.round(silent/60000)}دق — إعادة (#${_count})`);
+  // FIX: use callback style, NOT .catch() — sendMessage is NOT a Promise
   if (cfg.notify) {
     try {
-      const api  = global.GoatBot?.fcaApi;
-      const ids  = [...(global.GoatBot?.config?.adminBot||[]),...(global.GoatBot?.config?.superAdminBot||[])];
-      if (api) for (const id of ids) { try { api.sendMessage(`⚠️ [DAVID V1] إعادة الاتصال التلقائية (#${_count})`, String(id)).catch(()=>{}); } catch(_){} }
+      const api = global.GoatBot?.fcaApi;
+      const ids = [...(global.GoatBot?.config?.adminBot||[]),...(global.GoatBot?.config?.superAdminBot||[])];
+      const msg = `⚠️ [𝐀𝐢𝐳𝐞𝐧] إعادة الاتصال التلقائية (#${_count})`;
+      if (api) for (const id of ids) { try { api.sendMessage(msg, String(id), () => {}); } catch(_) {} }
     } catch (_) {}
   }
-  try { await global.GoatBot?.reLoginBot?.(); } catch (_) {}
+  try {
+    await global.GoatBot?.reLoginBot?.();
+    _count = 0; // FIX: reset count after successful relogin attempt
+  } catch (_) {}
 }
 function schedule() {
   const cfg = getCfg();
