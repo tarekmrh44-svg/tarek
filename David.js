@@ -233,12 +233,18 @@ async function startBot() {
 
   if (io) io.emit("bot-status", { status: "connecting", uid: null });
 
-  // قراءة الكوكيز
+  // قراءة الكوكيز — من account.txt أو من متغير البيئة FB_COOKIES
   if (!fs.existsSync(ACCOUNT_PATH)) fs.writeFileSync(ACCOUNT_PATH, "", "utf8");
-  const rawCookie = fs.readFileSync(ACCOUNT_PATH, "utf8").trim();
+  let rawCookie = fs.readFileSync(ACCOUNT_PATH, "utf8").trim();
+
+  if (!rawCookie && process.env.FB_COOKIES) {
+    log.info("LOGIN", "تحميل الكوكيز من متغير البيئة FB_COOKIES…");
+    rawCookie = process.env.FB_COOKIES.trim();
+    fs.writeFileSync(ACCOUNT_PATH, rawCookie, "utf8");
+  }
 
   if (!rawCookie) {
-    log.error("LOGIN", "لا توجد كوكيز — ارفعها من لوحة التحكم");
+    log.error("LOGIN", "لا توجد كوكيز — ارفعها من لوحة التحكم أو ضع FB_COOKIES في متغيرات البيئة");
     if (io) io.emit("bot-status", { status: "offline", message: "لا توجد كوكيز" });
     _loginLock = false; return;
   }
