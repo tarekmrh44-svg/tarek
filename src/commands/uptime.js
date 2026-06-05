@@ -1,6 +1,6 @@
 /**
- * DAVID V1 — /uptime — وقت تشغيل البوت مع إحصائيات
- * Copyright © 2025 DJAMEL
+ * /uptime — وقت تشغيل البوت مع إحصائيات
+ * Copyright © 2025
  */
 "use strict";
 const os = require("os");
@@ -21,27 +21,26 @@ function formatUptime(ms) {
 
 module.exports = {
   config: {
-    name: "uptime", aliases: ["up","ping","وقت"], version: "2.0", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "uptime", aliases: ["up","وقت"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 5, role: 2, category: "info",
     description: "عرض وقت تشغيل البوت مع الإحصائيات",
     guide: { en: "{pn} — عرض الإحصائيات" }
   },
 
   onStart: async function({ api, event, message }) {
-    const start = global.GoatBot?.startTime || Date.now();
-    const upMs  = Date.now() - start;
-    const mem   = process.memoryUsage();
-    const sysM  = { total: os.totalmem(), free: os.freemem() };
-    const cmds  = global.GoatBot?.commands?.size || 0;
-    const uid   = global.GoatBot?.botID || "—";
+    const start  = global.GoatBot?.startTime || Date.now();
+    const upMs   = Date.now() - start;
+    const mem    = process.memoryUsage();
+    const sysM   = { total: os.totalmem(), free: os.freemem() };
+    const cmds   = global.GoatBot?.commands?.size || 0;
+    const uid    = global.GoatBot?.botID || "—";
     const prefix = global.GoatBot?.config?.prefix || "/";
-
-    const ping = Date.now();
+    const ping   = Date.now();
     await new Promise(r => setTimeout(r, 10));
     const pong = Date.now() - ping;
 
     const lines = [
-      `╔════ DAVID V1 — Status ════╗`,
+      `╔══════ 𝐀𝐢𝐳𝐞𝐧 — Status ══════╗`,
       `║ 🤖 Bot ID: ${uid}`,
       `║ ⏱ Uptime: ${formatUptime(upMs)}`,
       `║ 🏓 Ping: ${pong}ms`,
@@ -51,9 +50,8 @@ module.exports = {
       `║ 🛡 Protection: 20 طبقة نشطة`,
       `║ 🔑 Prefix: ${prefix}`,
       `║ 👑 By: 𝐀𝐢𝐳𝐞𝐧`,
-      `╚══════════════════════════╝`
+      `╚══════════════════════════════╝`
     ];
-
     message.reply(lines.join("\n"));
   }
 };
