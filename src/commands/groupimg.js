@@ -44,7 +44,7 @@ async function applyImage(api, tid) {
 
 module.exports = {
   config: {
-    name: "groupimg", aliases: ["gcimg","صورة","img"], version: "3.1", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "groupimg", aliases: ["gcimg","صورة","img","صورة_غروب","قفل_صورة","تغيير_صورة"], version: "3.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 5, role: 2, category: "management",
     description: "تغيير وقفل صورة الغروب تلقائياً",
     guide: { en: "{pn} [رابط أو صورة] — تغيير وقفل\n{pn} off — فك القفل\n{pn} status — الحالة" }

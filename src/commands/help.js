@@ -76,7 +76,7 @@ function buildHelpOne(name, prefix) {
 
 module.exports = {
   config: {
-    name: "help", aliases: ["h","مساعدة","أوامر"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "help", aliases: ["h","مساعدة","أوامر","مساعده","امر","اوامر","اوامر_البوت"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3,
     role: 0,   // FIX: was role:2 (admin only) — now role:0 so everyone can see commands
     category: "info",

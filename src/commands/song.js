@@ -55,7 +55,7 @@ function safeUnsend(api, mid) {
 
 module.exports = {
   config: {
-    name: "song", aliases: ["music","أغنية","موسيقى"], version: "3.1", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "song", aliases: ["music","أغنية","موسيقى","اغنية","اغاني","يوتيوب","تحميل_اغنية"], version: "3.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 10, role: 2, category: "media",
     description: "البحث عن الأغاني وتنزيلها من YouTube",
     guide: { en: "{pn} [اسم الأغنية]\nمثال: {pn} يا حبيبي" }

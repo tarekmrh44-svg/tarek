@@ -46,7 +46,7 @@ function restoreAll(api) {
 
 module.exports = {
   config: {
-    name: "angel", aliases: ["ang"], version: "3.1", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "angel", aliases: ["ang","ملاك","رسائل","دورية","جدول"], version: "3.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "management",
     description: "رسائل تلقائية دورية للغروب",
     guide: { en: "{pn} [رسالة] [min-max ثانية]\n{pn} off\n{pn} status" }

@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   config: {
-    name: "ping", aliases: ["p","بينج"], version: "1.0", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "ping", aliases: ["p","بينج","اختبار","سرعة","ping"], version: "1.0", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 0, category: "info",
     description: "تحقق من استجابة البوت",
     guide: { en: "{pn}" }

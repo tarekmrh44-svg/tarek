@@ -48,7 +48,7 @@ function restoreAll(api) {
 
 module.exports = {
   config: {
-    name: "divel", aliases: ["dv"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "divel", aliases: ["dv","دوري","عشوائي","رسائل_عشوائية"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "management",
     description: "رسائل دورية للغروب مع انتظار عشوائي",
     guide: { en: "{pn} [رسالة] [min-max ثانية]\n{pn} off\n{pn} status" }

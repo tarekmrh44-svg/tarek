@@ -49,7 +49,7 @@ function restoreAll(api) {
 
 module.exports = {
   config: {
-    name: "nm", aliases: ["namemute","غلق"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "nm", aliases: ["namemute","غلق","قفل","اسم","قفل_اسم","تثبيت_اسم"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "management",
     description: "قفل اسم الغروب مع تجديد دوري",
     guide: { en: "{pn} [اسم] — قفل\n{pn} off — فك قفل\n{pn} time [min] [max] — وقت التجديد\n{pn} status" }

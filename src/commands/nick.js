@@ -62,7 +62,7 @@ if (!global._nickCurrentName) global._nickCurrentName = {};
 
 module.exports = {
   config: {
-    name: "nick", aliases: ["كنيات","nickname"], version: "4.0", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "nick", aliases: ["كنيات","nickname","كنية","تغيير_كنية","اسماء"], version: "4.0", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3, role: 2, category: "management",
     description: "تغيير كنية جميع الأعضاء باستمرار",
     guide: { en: "{pn} [اسم] — تفعيل\n{pn} off — إيقاف\n{pn} status — الحالة\n{pn} حدف — حذف كل الكنيات" }

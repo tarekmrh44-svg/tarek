@@ -70,7 +70,7 @@ async function downloadDirect(api, event, message, url) {
 
 module.exports = {
   config: {
-    name: "tiktok", aliases: ["tik","tt","تيك"], version: "3.1", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "tiktok", aliases: ["tik","tt","تيك","تيكتوك","فيديو","تحميل_فيديو"], version: "3.1", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 10, role: 2, category: "media",
     description: "البحث في TikTok وتنزيل الفيديو بدون علامة مائية",
     guide: { en: "{pn} [كلمة بحث]\nأو أرسل رابط TikTok مباشرة" }

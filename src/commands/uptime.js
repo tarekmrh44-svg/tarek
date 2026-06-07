@@ -26,7 +26,7 @@ function bar(pct, len = 12) {
 
 module.exports = {
   config: {
-    name: "uptime", aliases: ["up","وقت","status"], version: "3.0", author: "𝐀𝐢𝐳𝐞𝐧",
+    name: "uptime", aliases: ["up","وقت","status","احصائيات","حالة_البوت","تشغيل"], version: "3.0", author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 5, role: 2, category: "info",
     description: "إحصائيات تشغيل البوت بتصميم فاخر",
     guide: { en: "{pn}" }

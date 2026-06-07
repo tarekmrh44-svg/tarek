@@ -93,7 +93,7 @@ async function handleNickChange(api, event) {
 module.exports = {
   config: {
     name: "nickwatch",
-    aliases: ["nw", "watchnick", "مراقبة"],
+    aliases: ["nw","watchnick","مراقبة","مراقبه","مراقبة_كنيات","حماية_كنيات"],
     version: "1.0",
     author: "𝐀𝐢𝐳𝐞𝐧",
     countDown: 3,
