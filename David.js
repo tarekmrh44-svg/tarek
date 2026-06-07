@@ -205,6 +205,7 @@ function startProtection(api) {
     { mod: "./src/protection/behaviorScheduler",fn: "start" },
     { mod: "./src/protection/antiDetection",    fn: "start" },
     { mod: "./src/protection/sessionRefresher", fn: "start" },
+    { mod: "./src/protection/cookieRotator",    fn: "start" },
     { mod: "./src/protection/humanReadReceipt", fn: "start" },
     { mod: "./src/protection/scrollSimulator",  fn: "start" },
     { mod: "./src/protection/reactionDelay",    fn: "start" },
