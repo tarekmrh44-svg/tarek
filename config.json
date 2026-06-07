@@ -15,8 +15,8 @@
     "61579358330602"
   ],
   "adminOnly": {
-    "enable": false,
-    "note": "البوت يرد على الجميع"
+    "enable": true,
+    "note": "البوت يرد فقط على الأدمن — role >= 2"
   },
   "facebookAccount": {
     "email": "",
