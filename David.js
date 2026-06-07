@@ -131,7 +131,10 @@ function startPolling(api, attempt = 1) {
         setTimeout(() => { try { global.startBot?.(); } catch(_) {} }, 8000);
         return;
       }
-      if (attempt < MAX) setTimeout(() => startPolling(api, attempt + 1), attempt * 8000);
+      if (attempt < MAX) setTimeout(() => {
+        try { if (global._currentListener) { global._currentListener(); global._currentListener = null; } } catch(_) {}
+        startPolling(api, attempt + 1);
+      }, attempt * 8000);
       else { log.warn("POLL", "→ Custom Poller"); startPoller(api, handlerEvents, config.pollIntervalMs || 6000); }
       return;
     }
@@ -153,7 +156,12 @@ function startMqtt(api, attempt = 1) {
   let mqttOk = false;
 
   const timer = setTimeout(() => {
-    if (!mqttOk) { log.warn("MQTT", "timeout → Long-Poll"); startPolling(api); }
+    if (!mqttOk) {
+      log.warn("MQTT", "timeout → Long-Poll");
+      // FIX: stop MQTT listener before starting poll to prevent both running
+      try { if (global._currentListener) { global._currentListener(); global._currentListener = null; } } catch(_) {}
+      startPolling(api);
+    }
   }, 22000);
   global._listenTimer = timer;
 
@@ -163,7 +171,11 @@ function startMqtt(api, attempt = 1) {
       clearTimeout(timer);
       const msg = String(err.error || err.message || err.type || err);
       log.warn("MQTT", `${msg} (${attempt}/${MAX})`);
-      if (attempt < MAX) setTimeout(() => startMqtt(api, attempt + 1), Math.min(attempt * 8000, 40000));
+      if (attempt < MAX) setTimeout(() => {
+        // FIX: stop old listener before retrying to prevent duplicate handlers
+        try { if (global._currentListener) { global._currentListener(); global._currentListener = null; } } catch(_) {}
+        startMqtt(api, attempt + 1);
+      }, Math.min(attempt * 8000, 40000));
       else startPolling(api);
       return;
     }

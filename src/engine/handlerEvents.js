@@ -1,57 +1,61 @@
 /**
- * DAVID V1 — Unified Event Handler (WHITE-V3 + Jarfis merged)
- * Copyright © 2025 DJAMEL
+ * DAVID V1 — Unified Event Handler
+ * Copyright © 2025
  */
 "use strict";
 
 const rateLimit = require("../protection/rateLimit");
 
-// ─── Helpers ────────────────────────────────────────────────────────────────────
+// ─── Message deduplication cache ─────────────────────────────────────────────
+// Prevents duplicate processing when multiple listeners fire for the same event
+const _seen = new Map(); // messageID → timestamp
+const DEDUP_TTL = 60000; // 60 seconds
+function isDuplicate(mid) {
+  if (!mid) return false;
+  const now = Date.now();
+  // Clean expired entries
+  if (_seen.size > 200) {
+    for (const [k, ts] of _seen) { if (now - ts > DEDUP_TTL) _seen.delete(k); }
+  }
+  if (_seen.has(mid)) return true;
+  _seen.set(mid, now);
+  return false;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getRole(senderID) {
-  const cfg     = global.GoatBot?.config || {};
-  const sid     = String(senderID);
-  const supers  = [...(cfg.superAdminBot || []), cfg.ownerID].filter(Boolean).map(String);
-  const admins  = (cfg.adminBot || []).map(String);
+  const cfg    = global.GoatBot?.config || {};
+  const sid    = String(senderID);
+  const supers = [...(cfg.superAdminBot || []), cfg.ownerID].filter(Boolean).map(String);
+  const admins = (cfg.adminBot || []).map(String);
   if (supers.includes(sid)) return 3;
   if (admins.includes(sid)) return 2;
   return 0;
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
 function buildMessage(api, event) {
   return {
-    reply: async (msg, cb) => {
-      try {
-        const text = typeof msg === "string" ? msg : msg?.body || "";
-        const delay = global.utils?.calcHumanTypingDelay?.(text) || 1000;
-        await global.utils?.simulateTyping?.(api, event.threadID, delay);
-      } catch (_) {}
-      return api.sendMessage(msg, event.threadID, cb);
+    reply: (msg, cb) => {
+      try { api.sendMessage(msg, event.threadID, cb); } catch (_) {}
     },
-    unsend:  (mid, cb)        => { try { api.unsendMessage(mid || event.messageID, cb); } catch (_) {} },
-    react:   (emoji, mid, cb) => { try { api.setMessageReaction(emoji, mid || event.messageID, () => {}, true); } catch (_) {} },
-    send:    (msg, tid, cb)   => api.sendMessage(msg, tid || event.threadID, cb),
+    unsend: (mid, cb) => { try { api.unsendMessage(mid || event.messageID, cb || (() => {})); } catch (_) {} },
+    react:  (emoji, mid, cb) => { try { api.setMessageReaction(emoji, mid || event.messageID, () => {}, true); } catch (_) {} },
+    send:   (msg, tid, cb)   => { try { api.sendMessage(msg, tid || event.threadID, cb); } catch (_) {} },
   };
 }
 
-// ─── Anti-Flood (Layer 16 من WHITE-V3) ───────────────────────────────────────────
+// ─── Anti-Flood ───────────────────────────────────────────────────────────────
 function checkFlood(tid, sid) {
   const cfg = global.GoatBot?.config?.rateLimit || {};
-  const key = `flood:${tid}:${sid}`;
-  const r   = rateLimit.check(key, cfg.maxMessagesPerWindow || 8, cfg.windowMs || 6000);
-  return r.exceeded;
+  return rateLimit.check(`flood:${tid}:${sid}`, cfg.maxMessagesPerWindow || 8, cfg.windowMs || 6000).exceeded;
 }
-
-// ─── Anti-Spam (Layer 17) ─────────────────────────────────────────────────────
 function checkSpam(sid) {
-  const key = `spam:${sid}`;
-  return rateLimit.check(key, 20, 30000).exceeded;
+  return rateLimit.check(`spam:${sid}`, 20, 30000).exceeded;
 }
 
-// ─── Reply handler (onReply callbacks) ─────────────────────────────────────────
+// ─── onReply callbacks ────────────────────────────────────────────────────────
 async function handleReply(api, event) {
-  const replyMap = global.GoatBot?.onReply;
+  const replyMap   = global.GoatBot?.onReply;
   if (!replyMap?.size) return false;
   const replyMsgID = event.messageReply?.messageID;
   if (!replyMsgID) return false;
@@ -72,13 +76,16 @@ async function handleReply(api, event) {
   return false;
 }
 
-// ─── Event handler ─────────────────────────────────────────────────────────────
+// ─── Main handler ─────────────────────────────────────────────────────────────
 async function onEventCmds(api, event, commands) {
   if (!event || !api) return;
   global.lastMqttActivity = Date.now();
 
-  const { type, senderID, threadID, body = "" } = event;
+  const { type, senderID, threadID, body = "", messageID } = event;
   if (!senderID || !threadID) return;
+
+  // FIX: skip if this exact message was already processed (duplicate listener bug)
+  if (isDuplicate(messageID)) return;
 
   // Dashboard stats
   try {
@@ -86,7 +93,7 @@ async function onEventCmds(api, event, commands) {
     if (typeof global._trackMsg  === "function") global._trackMsg(threadID, senderID, body);
   } catch (_) {}
 
-  // onEvent (group events like join/leave/image)
+  // onEvent commands (join/leave/image etc)
   if (type !== "message" && type !== "message_reply") {
     const allCmds = commands || global.GoatBot?.commands;
     if (allCmds) {
@@ -99,7 +106,7 @@ async function onEventCmds(api, event, commands) {
     return;
   }
 
-  // Handle reply callbacks
+  // onReply callbacks
   if (type === "message_reply" || event.messageReply) {
     if (await handleReply(api, event)) return;
   }
@@ -110,7 +117,7 @@ async function onEventCmds(api, event, commands) {
   // DM lock
   if (global.GoatBot?.dmLocked && !event.isGroup) return;
 
-  // Flood + Spam
+  // Flood / Spam
   if (checkFlood(threadID, senderID)) return;
   if (checkSpam(senderID)) return;
 
@@ -119,6 +126,7 @@ async function onEventCmds(api, event, commands) {
   const role      = getRole(senderID);
   if (adminOnly && role < 2) return;
 
+  // Prefix check
   const prefix = global.GoatBot?.config?.prefix || "/";
   if (!body.trimStart().startsWith(prefix)) return;
 
@@ -140,22 +148,18 @@ async function onEventCmds(api, event, commands) {
   // Permission check
   const required = cmd.config?.role ?? 2;
   if (role < required) {
-    try { await api.sendMessage("⛔ هذا الأمر للأدمن فقط.", threadID); } catch (_) {}
+    try { api.sendMessage("⛔ هذا الأمر للأدمن فقط.", threadID); } catch (_) {}
     return;
   }
 
-  // Execute
-  const ctx = {
-    api, event, args, commandName: cmdName,
-    message: buildMessage(api, event),
-    prefix, role, senderID, threadID,
-  };
+  // Execute command
+  const ctx = { api, event, args, commandName: cmdName, message: buildMessage(api, event), prefix, role, senderID, threadID };
   try {
     if (typeof cmd.onStart === "function") await cmd.onStart(ctx);
     else if (typeof cmd.run === "function") await cmd.run(ctx);
   } catch (e) {
     global.log?.error?.("CMD", `خطأ في /${cmdName}: ${e.message}`);
-    try { await api.sendMessage(`❌ خطأ في الأمر: ${e.message}`, threadID); } catch (_) {}
+    try { api.sendMessage(`❌ خطأ في الأمر: ${e.message}`, threadID); } catch (_) {}
   }
 }
 
