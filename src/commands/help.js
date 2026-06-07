@@ -14,6 +14,7 @@ const COMMANDS_INFO = {
   song:     { icon: "🎵", desc: "البحث وتنزيل الأغاني من YouTube",     usage: "/song [اسم الأغنية]" },
   tiktok:   { icon: "🎬", desc: "تنزيل فيديو TikTok بدون علامة مائية",usage: "/tiktok [بحث أو رابط]" },
   uptime:   { icon: "⏱️", desc: "وقت تشغيل البوت مع الإحصائيات",      usage: "/uptime" },
+  nickwatch:{ icon: "🔍", desc: "مراقبة الكنيات وإعادتها تلقائياً",   usage: "/nickwatch on/off/block/set/log" },
   ping:     { icon: "🏓", desc: "تحقق من استجابة البوت",               usage: "/ping" },
   help:     { icon: "❓", desc: "عرض قائمة الأوامر",                    usage: "/help [اسم الأمر]" },
 };
