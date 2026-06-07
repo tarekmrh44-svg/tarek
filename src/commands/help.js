@@ -1,94 +1,40 @@
-/**
- * /help — قائمة الأوامر
- * Copyright © 2025
- */
-"use strict";
-
-const COMMANDS_INFO = {
-  angel:    { icon: "👼", desc: "رسائل تلقائية دورية للغروبات",        usage: "/angel [رسالة] [min-max ثانية] / off / status" },
-  divel:    { icon: "🌀", desc: "رسائل دورية مع انتظار عشوائي",        usage: "/divel [رسالة] [min-max] / off / status" },
-  nick:     { icon: "✍️", desc: "تغيير كنية جميع الأعضاء باستمرار",   usage: "/nick [اسم] / off / status / حدف" },
-  nm:       { icon: "🔒", desc: "قفل اسم الغروب",                       usage: "/nm [اسم] / off / time [min] [max] / status" },
-  chats:    { icon: "💬", desc: "إدارة المحادثات والغروبات",            usage: "/chats count / list / dm on|off / angel" },
-  groupimg: { icon: "🖼️", desc: "تغيير وقفل صورة الغروب",              usage: "/groupimg [رابط أو صورة] / off / status" },
-  song:     { icon: "🎵", desc: "البحث وتنزيل الأغاني من YouTube",     usage: "/song [اسم الأغنية]" },
-  tiktok:   { icon: "🎬", desc: "تنزيل فيديو TikTok بدون علامة مائية",usage: "/tiktok [بحث أو رابط]" },
-  uptime:   { icon: "⏱️", desc: "وقت تشغيل البوت مع الإحصائيات",      usage: "/uptime" },
-  nickwatch:{ icon: "🔍", desc: "مراقبة الكنيات وإعادتها تلقائياً",   usage: "/nickwatch on/off/block/set/log" },
-  ping:     { icon: "🏓", desc: "تحقق من استجابة البوت",               usage: "/ping" },
-  help:     { icon: "❓", desc: "عرض قائمة الأوامر",                    usage: "/help [اسم الأمر]" },
-};
-
-function buildHelpAll(prefix) {
-  const lines = [
-    "╔════════════════════════════════════╗",
-    "║     🤖 𝐀𝐢𝐳𝐞𝐧 — قائمة الأوامر     ║",
-    "╠════════════════════════════════════╣",
-    `║  Prefix: ${prefix}                       ║`,
-    "╠════════════════════════════════════╣",
-  ];
-  const allCmds = global.GoatBot?.commands;
-  const seen    = new Set();
-  if (allCmds?.size) {
-    for (const [, cmd] of allCmds) {
-      const name = cmd.config?.name;
-      if (!name || seen.has(name)) continue;
-      seen.add(name);
-      const info = COMMANDS_INFO[name] || {};
-      const desc = (cmd.config?.description || info.desc || "").slice(0, 30);
-      lines.push(`║ ${info.icon||"•"} ${prefix}${name.padEnd(10)} — ${desc}`);
-    }
-  } else {
-    for (const [name, info] of Object.entries(COMMANDS_INFO))
-      lines.push(`║ ${info.icon} ${prefix}${name.padEnd(10)} — ${info.desc}`);
-  }
-  lines.push("╠════════════════════════════════════╣");
-  lines.push(`║  📦 الإجمالي: ${seen.size || Object.keys(COMMANDS_INFO).length} أوامر              ║`);
-  lines.push("╠════════════════════════════════════╣");
-  lines.push("║  /help [اسم الأمر] للتفاصيل        ║");
-  lines.push("╚════════════════════════════════════╝");
-  return lines.join("\n");
-}
-
-function buildHelpOne(name, prefix) {
-  const allCmds = global.GoatBot?.commands;
-  const cmd     = allCmds?.get(name.toLowerCase());
-  const info    = COMMANDS_INFO[name.toLowerCase()] || {};
-  const config  = cmd?.config || {};
-  const desc    = config.description || info.desc || "لا يوجد وصف";
-  const usage   = config.guide?.en?.replace(/\{p[n]?\}/g, prefix) || info.usage || `${prefix}${name}`;
-  const aliases = (config.aliases || []).filter(Boolean);
-  const cat     = config.category || "admin";
-  const roleN   = config.role ?? 2;
-  const roleT   = roleN >= 3 ? "👑 Owner" : roleN >= 2 ? "🔑 Admin" : "👤 الجميع";
-  const lines = [
-    `╔══ ${info.icon||"•"} ${prefix}${name.toUpperCase()} ════════════════════╗`,
-    `║ 📝 ${desc}`,
-    `║ 📌 الاستخدام:`,
-    ...usage.split("\n").map(l => `║    ${l}`),
-    `║ 🏷 الفئة: ${cat}`,
-    `║ 🔑 الصلاحية: ${roleT}`,
-  ];
-  if (aliases.length) lines.push(`║ 🔀 اختصارات: ${aliases.join(", ")}`);
-  lines.push("╚════════════════════════════════════╝");
-  return lines.join("\n");
-}
-
 module.exports = {
   config: {
-    name: "help", aliases: ["h","مساعدة","أوامر","مساعده","امر","اوامر","اوامر_البوت"], version: "2.1", author: "𝐀𝐢𝐳𝐞𝐧",
-    countDown: 3,
-    role: 0,   // FIX: was role:2 (admin only) — now role:0 so everyone can see commands
-    category: "info",
-    description: "عرض قائمة الأوامر بتصميم جميل",
-    guide: { en: "{pn} — عرض كل الأوامر\n{pn} [اسم الأمر] — تفاصيل أمر" }
+    name: "help",
+    aliases: ["commands", "cmds", "مساعدة"],
+    description: "عرض جميع الأوامر المتاحة",
+    usage: "help [اسم الأمر]",
+    adminOnly: false,
   },
-  onStart: async function({ args, message, prefix }) {
+  async run({ api, event, args, threadID }) {
+    const commands = global.commands;
+    const prefix = global.commandPrefix;
+
     if (args[0]) {
-      const name = args[0].toLowerCase().replace(/^\//, "");
-      message.reply(buildHelpOne(name, prefix));
-    } else {
-      message.reply(buildHelpAll(prefix));
+      const cmd = commands.get(args[0].toLowerCase());
+      if (!cmd)
+        return api.sendMessage(`❌ الأمر "${args[0]}" غير موجود.`, threadID);
+      return api.sendMessage(
+        `📌 الأمر: ${prefix}${cmd.config.name}\n` +
+          `📝 الوصف: ${cmd.config.description || "لا يوجد وصف"}\n` +
+          `🔧 الاستخدام: ${prefix}${cmd.config.usage || cmd.config.name}\n` +
+          `🔒 للأدمن فقط: ${cmd.config.adminOnly ? "نعم" : "لا"}`,
+        threadID
+      );
     }
-  }
+
+    const seen = new Set();
+    const list = [];
+    for (const [, cmd] of commands) {
+      if (!seen.has(cmd.config.name)) {
+        seen.add(cmd.config.name);
+        list.push(`• ${prefix}${cmd.config.name} — ${cmd.config.description || "لا يوجد وصف"}`);
+      }
+    }
+
+    api.sendMessage(
+      `🤖 أوامر ${global.botName}\n\n${list.join("\n")}\n\nاكتب ${prefix}help <اسم الأمر> للتفاصيل.`,
+      threadID
+    );
+  },
 };
